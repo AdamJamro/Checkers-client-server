@@ -5,6 +5,7 @@ import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import javafx.scene.media.AudioClip;
 import javafx.stage.Stage;
 
 public class CheckersDemoApp extends Application {
@@ -13,16 +14,22 @@ public class CheckersDemoApp extends Application {
     public static final int WIDTH = 8;
     public static final int HEIGHT = 8;
 
-    private Tile[][] board = new Tile[WIDTH][HEIGHT];
+    private final Tile[][] board = new Tile[WIDTH][HEIGHT];
 
-    private Group tileGroup = new Group();
-    private Group pieceGroup = new Group();
+    private final Group tileGroup = new Group();
+    private final Group pieceGroup = new Group();
 
+    private AudioClip clip = null;
+
+
+    // create root node for our demo app
     private Parent createContent() {
         Pane root = new Pane();
         root.setPrefSize(WIDTH * TILE_SIZE, HEIGHT * TILE_SIZE);
         root.getChildren().addAll(tileGroup, pieceGroup);
 
+
+        // fill out the board with pieces and tiles on their spots
         for (int y = 0; y < HEIGHT; y++) {
             for (int x = 0; x < WIDTH; x++) {
                 Tile tile = new Tile((x + y) % 2 == 0, x, y);
@@ -55,6 +62,7 @@ public class CheckersDemoApp extends Application {
             return new MoveResult(MoveType.NONE);
         }
 
+
         int x0 = toBoard(piece.getOldX());
         int y0 = toBoard(piece.getOldY());
 
@@ -78,7 +86,7 @@ public class CheckersDemoApp extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         Scene scene = new Scene(createContent());
         primaryStage.setTitle("CheckersApp");
         primaryStage.setScene(scene);
@@ -109,11 +117,17 @@ public class CheckersDemoApp extends Application {
                     piece.move(newX, newY);
                     board[x0][y0].setPiece(null);
                     board[newX][newY].setPiece(piece);
+
+//                    clip().play();
                 }
                 case KILL -> {
                     piece.move(newX, newY);
                     board[x0][y0].setPiece(null);
                     board[newX][newY].setPiece(piece);
+
+//                    clip().play();
+
+
                     Piece otherPiece = result.getPiece();
                     board[toBoard(otherPiece.getOldX())][toBoard(otherPiece.getOldY())].setPiece(null);
                     pieceGroup.getChildren().remove(otherPiece);
@@ -124,7 +138,17 @@ public class CheckersDemoApp extends Application {
         return piece;
     }
 
+    private AudioClip clip(){
+        if (clip == null) {
+            String src = getClass().getResource("com/example/demo/CheckersDemo/capture.mp3").toString();
+            System.out.println("src " + src);
+            clip = new AudioClip(src);
+        }
+        return clip;
+    }
+
     public static void main(String[] args) {
+
         launch(args);
     }
 }

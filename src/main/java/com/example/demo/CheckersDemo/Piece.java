@@ -2,11 +2,12 @@ package com.example.demo.CheckersDemo;
 
 
 import javafx.scene.layout.StackPane;
+import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 
-import static com.example.demo.CheckersDemo.CheckersDemoApp.TILE_SIZE;
 
+import static com.example.demo.CheckersDemo.CheckersDemoApp.TILE_SIZE;
 
 public class Piece extends StackPane {
 
@@ -68,6 +69,8 @@ public class Piece extends StackPane {
         oldY = y * TILE_SIZE;
         relocate(oldX, oldY);
     }
+
+
 
     public void abortMove() {
         relocate(oldX, oldY);
