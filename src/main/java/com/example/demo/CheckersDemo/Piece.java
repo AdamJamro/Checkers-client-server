@@ -1,6 +1,5 @@
 package com.example.demo.CheckersDemo;
 
-
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
