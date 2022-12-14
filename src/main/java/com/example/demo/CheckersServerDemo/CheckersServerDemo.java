@@ -1,8 +1,10 @@
 package com.example.demo.CheckersServerDemo;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 import java.util.concurrent.Executors;
 
 public class CheckersServerDemo {
@@ -14,30 +16,52 @@ public class CheckersServerDemo {
     }
 
     public void ServerBoot() {
-        System.out.println("Server is running...");
+        System.out.println("Server is running... listening on port " + serverSocket.getLocalPort());
         int ClientIndex = 1;
 
         try {
+
             var pool = Executors.newFixedThreadPool(2);
 
             while (!serverSocket.isClosed()){
-                Game game = new ClassicGame();
-                pool.execute(game.new Player(serverSocket.accept(), PlayerRole.WHITE, game);
-                System.out.println("Client " + ClientIndex++ + " has connected");
-                pool.execute(game.new Player(serverSocket.accept(), PlayerRole.BLACK, game));
-                System.out.println("Client " + ClientIndex++ + " has connected");
+
+
+                Socket clientsocketA = serverSocket.accept();
+                System.out.println("Client no." + ClientIndex++ + " has connected");
+
+                Game game = new GameBuilder(clientsocketA);
+
+                Socket clientsocketB = serverSocket.accept();
+                System.out.println("Client no." + ClientIndex++ + " has connected");
+
+
+
+                Player playerA = createPlayer(game, clientsocketA);
+                Player playerB = createPlayer(game, clientsocketB);
+
+
+
+                if (!clientsocketA.isConnected () || clientHandler == null) {
+                    continue;
+                }
+
+                pool.execute(new Player(clientsocketA, PlayerRole.WHITE, game));
+
+                pool.execute(new Player(serverSocket.accept(), PlayerRole.BLACK, game));
             }
         } catch (IOException e) {
+
             closeServerSocket();
         }
 
-
-
     }
 
-    public static void main(String[] args) throws Exception {
+
+
+    public static void main(String[] args) {
+
         try {
-            var listener = new ServerSocket(58901);
+            var listener = new ServerSocket(4545);
             new CheckersServerDemo(listener).ServerBoot();
         } catch (IOException e) {
             throw new RuntimeException(e);

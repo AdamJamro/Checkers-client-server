@@ -10,5 +10,4 @@ public enum PlayerRole implements Comparable<PlayerRole> {
     }
 
 
-
 }

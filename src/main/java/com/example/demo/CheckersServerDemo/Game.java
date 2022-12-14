@@ -8,26 +8,33 @@ public abstract class Game {
     //reference to the Player which has to move next
     Player currentPlayer;
 
-    // grid 8x8, null if empty, WHITE whilst being occupied by a white pawn, BLACK - black pawn
-    PlayerRole board[][];
+    private final int boardWidth;
+    private final int boardHeight;
+
+    // grid n by m, null if empty, WHITE whilst being occupied by a white pawn, BLACK - black pawn
+    PlayerRole[][] board;
+
+    protected Game(int boardWidth, int boardHeight) {
+        this.boardWidth = boardWidth;
+        this.boardHeight = boardHeight;
+        board = new PlayerRole[boardWidth][boardHeight];
+    }
+
     public boolean hasWinner() {
         return Arrays.stream(board).anyMatch(p -> Arrays.stream(p).anyMatch(x -> Objects.equals(x.side, currentPlayer.playerRole.side)));
     }
 
-    public boolean boardFilledUp() {
-        return Arrays.stream(board).allMatch(p -> p != null);
-    }
 
-    public synchronized void move(int location, ClassicPlayer player) {
+    public synchronized void move(int xLocation, int yLocation, Player player) {
         if (player != currentPlayer) {
             throw new IllegalStateException("Not your turn");
-        } else if (player.opponent == null) {
+        } else if (player.getOpponent() == null) {
             throw new IllegalStateException("You don't have an opponent yet");
-        } else if (board[location] != null) {
+        } else if (board[xLocation][yLocation] != null) {
             throw new IllegalStateException("Cell already occupied");
         }
-        board[location][1] = currentPlayer.playerRole;
-        currentPlayer = currentPlayer.opponent;
+        board[xLocation][yLocation] = currentPlayer.playerRole;
+        currentPlayer = currentPlayer.getOpponent();
     }
 
 
