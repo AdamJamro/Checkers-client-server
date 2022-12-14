@@ -53,9 +53,9 @@ public class Player implements Runnable {
             game.currentPlayer = this;
             output.println("MESSAGE Waiting for opponent to connect");
         } else {
-            opponent = game.currentPlayer;
-            opponent.opponent = this;
-            opponent.output.println("MESSAGE Your move");
+            this.opponent = game.currentPlayer;
+//            this.opponent.opponent = this;
+            opponent.output.println("MESSAGE Waiting for opponent move");
         }
     }
 
