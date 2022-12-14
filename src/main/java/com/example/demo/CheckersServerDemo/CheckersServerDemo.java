@@ -1,10 +1,8 @@
 package com.example.demo.CheckersServerDemo;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
 import java.util.concurrent.Executors;
 
 public class CheckersServerDemo {
@@ -26,28 +24,29 @@ public class CheckersServerDemo {
             while (!serverSocket.isClosed()){
 
 
-                Socket clientsocketA = serverSocket.accept();
+                Socket clientSocketA = serverSocket.accept();
                 System.out.println("Client no." + ClientIndex++ + " has connected");
 
-                Game game = new GameBuilder(clientsocketA);
+//                Game game = new GameBuilder(clientSocketA);
+                Game game = new ClassicGame();
+                pool.execute(new Player(clientSocketA, PlayerRole.WHITE, game));
 
-                Socket clientsocketB = serverSocket.accept();
+                Socket clientSocketB = serverSocket.accept();
                 System.out.println("Client no." + ClientIndex++ + " has connected");
 
 
 
-                Player playerA = createPlayer(game, clientsocketA);
-                Player playerB = createPlayer(game, clientsocketB);
+//                Player playerA = createPlayer(game, clientSocketA);
+//                Player playerB = createPlayer(game, clientSocketB);
 
 
 
-                if (!clientsocketA.isConnected () || clientHandler == null) {
+                if (!clientSocketA.isConnected () || !clientSocketB.isConnected() || game == null) {
                     continue;
                 }
 
-                pool.execute(new Player(clientsocketA, PlayerRole.WHITE, game));
+                pool.execute(new Player(clientSocketB, PlayerRole.BLACK, game));
 
-                pool.execute(new Player(serverSocket.accept(), PlayerRole.BLACK, game));
             }
         } catch (IOException e) {
 

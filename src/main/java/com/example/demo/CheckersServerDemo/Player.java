@@ -48,6 +48,9 @@ public class Player implements Runnable {
     private void setup() throws IOException {
         input = new Scanner(socket.getInputStream());
         output = new PrintWriter(socket.getOutputStream(), true);
+
+        System.out.println("player" + this + "setup");
+
         output.println("WELCOME " + playerRole.side);
         if (playerRole == PlayerRole.WHITE) {
             game.currentPlayer = this;
@@ -64,20 +67,22 @@ public class Player implements Runnable {
             var command = input.nextLine();
             if (command.startsWith("QUIT")) {
                 return;
-            } else if (command.startsWith("MOVE")) {
+            } else if (command.startsWith("NORMAL") || command.startsWith("KILL")) {
                 processMoveCommand(
-                        Integer.parseInt( command.substring(5).split(":") [0] ),
-                        Integer.parseInt( command.substring(5).split(":") [1] )
+                        Integer.parseInt( command.substring(5).split(":") [1] ),
+                        Integer.parseInt( command.substring(5).split(":") [2] ),
+                        Integer.parseInt( command.substring(5).split(":") [3] ),
+                        Integer.parseInt( command.substring(5).split(":") [4] )
                 );
             }
         }
     }
 
-    private void processMoveCommand(int xLocation, int yLocation) {
+    private void processMoveCommand(int oldX, int oldY, int newX, int newY) {
         try {
-            game.move(xLocation, yLocation, this);
+            game.move(oldX, oldY, newX, newY, this);
             output.println("VALID_MOVE");
-            opponent.output.println("OPPONENT_MOVED " + xLocation + ":" + yLocation);
+            opponent.output.println("OPPONENT_MOVED " + newX + ":" + newY);
             if (game.hasWinner()) {
                 output.println("VICTORY");
                 opponent.output.println("DEFEAT");

@@ -25,15 +25,20 @@ public abstract class Game {
     }
 
 
-    public synchronized void move(int xLocation, int yLocation, Player player) {
+    public synchronized void move(int oldX, int oldY, int newX, int newY, Player player) {
         if (player != currentPlayer) {
             throw new IllegalStateException("Not your turn");
         } else if (player.getOpponent() == null) {
             throw new IllegalStateException("You don't have an opponent yet");
-        } else if (board[xLocation][yLocation] != null) {
+        } else if (board[newX][newY] != null) {
             throw new IllegalStateException("Cell already occupied");
+        } else if (newX >= boardWidth || newY >= boardHeight) {
+            throw new IllegalStateException("pawns cannot leave the board");
         }
-        board[xLocation][yLocation] = currentPlayer.playerRole;
+        System.out.println("board before:" + Arrays.deepToString(board));
+        board[oldX][oldY] = null;
+        board[newX][newY] = currentPlayer.playerRole;
+        System.out.println("board after:" + Arrays.deepToString(board));
         currentPlayer = currentPlayer.getOpponent();
     }
 
