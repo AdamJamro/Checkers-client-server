@@ -2,6 +2,8 @@ package com.example.demo.CheckersClientDemo;
 
 
 
+import javafx.application.Platform;
+
 import java.io.IOException;
 import java.util.Scanner;
 import java.io.PrintWriter;
@@ -20,7 +22,7 @@ import java.net.Socket;
  * Server -> Client WELCOME <char> VALID_MOVE OTHER_PLAYER_MOVED <n>
  * OTHER_PLAYER_LEFT VICTORY DEFEAT TIE MESSAGE <text>
  */
-public class CheckersClientDemo {
+public class CheckersClientDemo implements Runnable{
 
     private Socket socket;
     public Scanner in;
@@ -48,6 +50,8 @@ public class CheckersClientDemo {
         }
 
         handShake();
+
+        System.out.println("try to run this thread");
     }
 
     private void handShake(){
@@ -67,4 +71,18 @@ public class CheckersClientDemo {
             socket.close();
     }
 
+    @Override
+    public void run() {
+        Platform.runLater(() -> {
+        while(socket.isConnected()) {
+            if(in.hasNextLine())
+                System.out.println("in.nextLine: "+in.nextLine());
+            else{
+
+                System.out.println("runnable dies");
+                break;
+            }
+        }
+        });
+    }
 }

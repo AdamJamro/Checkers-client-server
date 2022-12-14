@@ -17,7 +17,7 @@ import java.util.Objects;
 
 public class CheckersDemoApp extends Application {
 
-    static CheckersClientDemo client;
+    private CheckersClientDemo client;
     public static final int TILE_SIZE = 100;
     public static final int WIDTH = 8;
     public static final int HEIGHT = 8;
@@ -38,8 +38,6 @@ public class CheckersDemoApp extends Application {
         root.setPrefSize(WIDTH * TILE_SIZE, HEIGHT * TILE_SIZE);
         root.getChildren().addAll(tileGroup, pieceGroup, msgLabel);
         msgLabel.setVisible(true);
-
-        //root.setOnMouseMoved(e -> play());
 
         // fill out the board with pieces and tiles on their spots
         for (int y = 0; y < HEIGHT; y++) {
@@ -206,11 +204,20 @@ public class CheckersDemoApp extends Application {
         Scene scene = new Scene(createContent());
         primaryStage.setTitle("CheckersApp");
         primaryStage.setScene(scene);
+        System.out.println("debug:show()");
         primaryStage.show();
     }
 
-    public static void main(String[] args) {
+
+    @Override
+    public void init() throws Exception {
         client = new CheckersClientDemo();
+        client.run();
+        System.out.println("debug:init()");
+        super.init();
+    }
+
+    public static void main(String[] args) {
         System.out.println("debug:launch(args)");
         launch(args);
     }

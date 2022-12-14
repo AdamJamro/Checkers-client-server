@@ -82,7 +82,7 @@ public class Player implements Runnable {
         try {
             game.move(oldX, oldY, newX, newY, this);
             output.println("VALID_MOVE");
-            opponent.output.println("OPPONENT_MOVED " + newX + ":" + newY);
+            opponent.output.println("OPPONENT_MOVED " + ":" + oldX + ":" + oldY + newX + ":" + newY);
             if (game.hasWinner()) {
                 output.println("VICTORY");
                 opponent.output.println("DEFEAT");
