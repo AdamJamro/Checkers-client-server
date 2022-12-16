@@ -20,24 +20,17 @@ public class CheckersServerDemo {
         try {
 
             var pool = Executors.newFixedThreadPool(2);
-
             while (!serverSocket.isClosed()){
-
 
                 Socket clientSocketA = serverSocket.accept();
                 System.out.println("Client no." + ClientIndex++ + " has connected");
 
-//                Game game = new GameBuilder(clientSocketA);
-                Game game = new ClassicGame();
+//              Game game = new GameBuilder(clientSocketA);
+                Game game = new ClassicCheckers();
+                pool.execute(new Player(clientSocketA, PawnColor.WHITE, game));
 
-                pool.execute(new Player(clientSocketA, PlayerRole.WHITE, game));
-
-
-
-//                Player playerA = createPlayer(game, clientSocketA);
-//                Player playerB = createPlayer(game, clientSocketB);
-
-
+//              Player playerA = createPlayer(game, clientSocketA);
+//              Player playerB = createPlayer(game, clientSocketB);
 
                 if (!clientSocketA.isConnected () || game == null) {
                     continue;
@@ -45,20 +38,16 @@ public class CheckersServerDemo {
 
                 Socket clientSocketB = serverSocket.accept();
                 System.out.println("Client no." + ClientIndex++ + " has connected");
-                pool.execute(new Player(clientSocketB, PlayerRole.BLACK, game));
+                pool.execute(new Player(clientSocketB, PawnColor.BLACK, game));
 
             }
         } catch (IOException e) {
-
             closeServerSocket();
         }
 
     }
 
-
-
     public static void main(String[] args) {
-
         try {
             var listener = new ServerSocket(4545);
             new CheckersServerDemo(listener).ServerBoot();
@@ -66,8 +55,6 @@ public class CheckersServerDemo {
             throw new RuntimeException(e);
         }
     }
-
-
 
     public void closeServerSocket() {
         try {
@@ -83,6 +70,5 @@ public class CheckersServerDemo {
         if (socket != null)
             socket.close();
     }
-
 
 }

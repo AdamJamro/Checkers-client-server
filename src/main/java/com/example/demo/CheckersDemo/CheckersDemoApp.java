@@ -30,7 +30,6 @@ public class CheckersDemoApp extends Application {
 
 //    private AudioClip clip = null;
 
-
     // create root node for our demo app
     private Parent createContent() {
         Pane root = new Pane();
@@ -70,7 +69,6 @@ public class CheckersDemoApp extends Application {
         if (board[newX][newY].hasPiece() || (newX + newY) % 2 == 0) {
             return new MoveResult(MoveType.NONE);
         }
-
 
         int x0 = toBoard(piece.getOldX());
         int y0 = toBoard(piece.getOldY());
@@ -124,14 +122,12 @@ public class CheckersDemoApp extends Application {
                     System.out.println(client.in.nextLine());
                     //TODO: parse response from server
 
-
-
                     piece.move(newX, newY);
                     board[x0][y0].setPiece(null);
                     board[newX][newY].setPiece(piece);
                     client.isCurrentPlayer = false;
 
-//                    clip().play();
+//                  clip().play();
                 }
                 case KILL -> {
                     client.pushCommand("KILL", x0, y0, newX, newY);
@@ -142,7 +138,7 @@ public class CheckersDemoApp extends Application {
                     board[x0][y0].setPiece(null);
                     board[newX][newY].setPiece(piece);
 
-//                    clip().play();
+//                  clip().play();
 
                     Piece otherPiece = result.getPiece();
                     board[toBoard(otherPiece.getOldX())][toBoard(otherPiece.getOldY())].setPiece(null);
@@ -188,9 +184,6 @@ public class CheckersDemoApp extends Application {
         Platform.runLater(() -> msgLabel.setText(msg));
     }
 
-
-
-
 //    private AudioClip clip(){
 //        if (clip == null) {
 //            String src = getClass().getResource("com/example/demo/CheckersDemo/capture.mp3").toString();
@@ -199,11 +192,10 @@ public class CheckersDemoApp extends Application {
 //        }
 //        return clip;
 //    }
-
-
+    @Override
     public void init() {
         try {
-            client = new CheckersClientDemo(new Socket("127.0.0.1", 4545));
+            client = new CheckersClientDemo(new Socket("localhost", 4545));
             System.out.println("client connected with server");
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -214,12 +206,11 @@ public class CheckersDemoApp extends Application {
     }
 
 
-    @Override
+    //@Override
     public void start(Stage primaryStage) {
         Scene scene = new Scene(createContent());
         primaryStage.setTitle("CheckersApp");
         primaryStage.setScene(scene);
-
 
         System.out.println("debug:show()");
         primaryStage.show();

@@ -1,11 +1,9 @@
 package com.example.demo.CheckersServerDemo;
 
-public enum PlayerRole implements Comparable<PlayerRole> {
+public enum PawnColor implements Comparable<PawnColor>{
     WHITE("white"), BLACK("black");
-
     String side;
-    PlayerRole(String side){
+    PawnColor(String side){
         this.side = side;
     }
-
 }

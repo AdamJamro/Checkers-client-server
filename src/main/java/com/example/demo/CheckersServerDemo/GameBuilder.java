@@ -14,7 +14,7 @@ public class GameBuilder {
     Game game;
 
     public GameBuilder(Socket socket) throws IOException {
-        this.socket=socket;
+        this.socket = socket;
         build();
     }
 

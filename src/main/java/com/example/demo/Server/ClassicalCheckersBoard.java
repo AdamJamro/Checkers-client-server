@@ -30,9 +30,9 @@ public class ClassicalCheckersBoard extends AbstractBoard {
 
     public boolean movePossible(final Tile fromTile, final Tile toTile) { //czy normalny ruch czy bicie
         if (fromTile.getPawn() != null && toTile.getPawn() == null) {
-
+            //if (Math.abs(fromTile.getCol() - toTile.getCol()) == 1 && )
         }
         return false;
     }
-
+    
 }

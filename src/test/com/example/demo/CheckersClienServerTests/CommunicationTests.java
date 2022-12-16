@@ -50,6 +50,5 @@ public class CommunicationTests {
         Assertions.assertEquals(client.in.nextLine(),"VALID_MOVE");
     }
 
-
     //TODO: MAKE MORE TESTS
 }

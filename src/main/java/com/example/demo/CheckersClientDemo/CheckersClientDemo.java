@@ -1,7 +1,5 @@
 package com.example.demo.CheckersClientDemo;
 
-
-
 import com.example.demo.CheckersDemo.CheckersDemoApp;
 import com.example.demo.CheckersDemo.Tile;
 import javafx.scene.Group;
@@ -11,8 +9,6 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.io.PrintWriter;
 import java.net.Socket;
-
-
 
 /**
  * A client for a multi-player tic tac toe game. Loosely based on an example in
@@ -51,19 +47,18 @@ public class CheckersClientDemo {
             System.out.println("Unable to establish connection with server");
             System.exit(1);
         }
-
         handShake();
     }
 
     private void handShake(){
 
         System.out.println("debug1");
-        if(in.hasNextLine()){
+        if (in.hasNextLine()){
             System.out.println("debug2");
             var response = in.nextLine();
             var side = response.substring(8);
             System.out.println("HANDSHAKE: " + side);
-            if(side.equalsIgnoreCase("WHITE")){
+            if(side.equalsIgnoreCase("white")){ //WHITE
                 isCurrentPlayer = false;
                 System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Waiting for opponent...
                 System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Opponent has joined...
@@ -75,15 +70,10 @@ public class CheckersClientDemo {
 
     }
 
-
-
     private void safeClose(Socket socket) throws IOException {
         if (socket != null)
             socket.close();
     }
-
-
-
 
     public void receiveMessageFromServer(Tile[][] board, Group pieceGroup, Label msgLabel){
         new Thread(() -> {
@@ -93,12 +83,10 @@ public class CheckersClientDemo {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-//                System.out.println("IM IN LISTENING THREAD!");
+//               System.out.println("IM IN LISTENING THREAD!");
 
                 if (!isCurrentPlayer && in.hasNextLine()){
-
                     System.out.println("IM LISTENING!");
-
 
                     try {
                         String msg = in.nextLine();

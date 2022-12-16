@@ -1,8 +1,8 @@
 package com.example.demo.CheckersServerDemo;
 
-public class ClassicGame extends Game {
+public class ClassicCheckers extends Game {
 
-    public ClassicGame() {
+    public ClassicCheckers() {
         super(8,8);
     }
 }

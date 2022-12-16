@@ -8,15 +8,17 @@ import java.util.Scanner;
 public class Player implements Runnable {
     private final Game game;
     private Player opponent;
-    public PlayerRole playerRole;
+    //public PlayerRole playerRole;
+    public PawnColor playerColor;
     public Socket socket;
     public Scanner input;
     public PrintWriter output;
 
 
-    public Player(Socket socket, PlayerRole playerRole, Game game) {
+    public Player(Socket socket, PawnColor playerColor, Game game) {
         this.socket = socket;
-        this.playerRole = playerRole;
+        this.playerColor = playerColor;
+        //this.playerRole = playerRole;
         this.game = game;
     }
 
@@ -24,10 +26,9 @@ public class Player implements Runnable {
         return this.opponent;
     }
 
-
     @Override
     public void run() {
-        try{
+        try {
             handShake();
             processCommands();
         } catch (Exception e) {
@@ -44,15 +45,14 @@ public class Player implements Runnable {
         }
     }
 
-
     private void handShake() throws IOException {
         input = new Scanner(socket.getInputStream());
         output = new PrintWriter(socket.getOutputStream(), true);
 
-//        System.out.println("player" + this + "setup");
+//      System.out.println("player" + this + "setup");
 
-        output.println("WELCOME " + playerRole.side);
-        if (playerRole == PlayerRole.WHITE) {
+        output.println("WELCOME " + playerColor.side);
+        if (playerColor == PawnColor.WHITE) {
             game.currentPlayer = this;
             output.println("MESSAGE Waiting for opponent to connect");
         } else {
@@ -65,6 +65,7 @@ public class Player implements Runnable {
     private void processCommands() {
         while (input.hasNextLine()) {
             var command = input.nextLine();
+            System.out.println(command);
             if (command.startsWith("QUIT")) {
                 return;
             } else if (command.startsWith("NORMAL")) {
@@ -97,15 +98,12 @@ public class Player implements Runnable {
 
         try {
             game.move(type, oldX, oldY, newX, newY, killX, killY, this);
-
-
             output.println("VALID_MOVE");
             opponent.output.println("OPPONENT_MOVED"
                     + ":" + type
                     + ":" + oldX + ":" + oldY
                     + ":" + newX + ":" + newY
                     + ":" + killX + ":" + killY);
-
             if (game.hasWinner()) {
                 output.println("VICTORY");
                 opponent.output.println("DEFEAT");
