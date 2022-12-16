@@ -49,7 +49,7 @@ public class Player implements Runnable {
         input = new Scanner(socket.getInputStream());
         output = new PrintWriter(socket.getOutputStream(), true);
 
-        System.out.println("player" + this + "setup");
+//        System.out.println("player" + this + "setup");
 
         output.println("WELCOME " + playerRole.side);
         if (playerRole == PlayerRole.WHITE) {
@@ -57,7 +57,7 @@ public class Player implements Runnable {
             output.println("MESSAGE Waiting for opponent to connect");
         } else {
             this.opponent = game.currentPlayer;
-//            this.opponent.opponent = this;
+            this.opponent.opponent = this;
             opponent.output.println("MESSAGE Waiting for opponent move");
         }
     }
@@ -67,22 +67,41 @@ public class Player implements Runnable {
             var command = input.nextLine();
             if (command.startsWith("QUIT")) {
                 return;
-            } else if (command.startsWith("NORMAL") || command.startsWith("KILL")) {
+            } else if (command.startsWith("NORMAL")) {
                 processMoveCommand(
-                        Integer.parseInt( command.substring(5).split(":") [1] ),
-                        Integer.parseInt( command.substring(5).split(":") [2] ),
-                        Integer.parseInt( command.substring(5).split(":") [3] ),
-                        Integer.parseInt( command.substring(5).split(":") [4] )
+                        Integer.parseInt( command.split(":") [1] ),
+                        Integer.parseInt( command.split(":") [2] ),
+                        Integer.parseInt( command.split(":") [3] ),
+                        Integer.parseInt( command.split(":") [4] ),
+                        -1,
+                        -1
+                );
+            } else if ( command.startsWith("KILL") ) {
+                processMoveCommand(
+                        Integer.parseInt( command.split(":") [1] ),
+                        Integer.parseInt( command.split(":") [2] ),
+                        Integer.parseInt( command.split(":") [3] ),
+                        Integer.parseInt( command.split(":") [4] ),
+                        Integer.parseInt( command.split(":") [5] ),
+                        Integer.parseInt( command.split(":") [6] )
                 );
             }
         }
     }
 
-    private void processMoveCommand(int oldX, int oldY, int newX, int newY) {
+
+    private void processMoveCommand(int oldX, int oldY, int newX, int newY, int killX, int killY) {
+
         try {
             game.move(oldX, oldY, newX, newY, this);
+
+
             output.println("VALID_MOVE");
-            opponent.output.println("OPPONENT_MOVED " + ":" + oldX + ":" + oldY + newX + ":" + newY);
+            opponent.output.println("OPPONENT_MOVED"
+                    + ":" + oldX + ":" + oldY
+                    + ":" + newX + ":" + newY
+                    + ":" + killX + ":" + killY);
+
             if (game.hasWinner()) {
                 output.println("VICTORY");
                 opponent.output.println("DEFEAT");

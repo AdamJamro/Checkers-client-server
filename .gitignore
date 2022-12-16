@@ -11,6 +11,9 @@ target/
 *.iws
 *.iml
 *.ipr
+src/main/java/com/example/demo/TicTacToeExample
+src/main/java/com/example/demo/HelloApplication.java
+src/main/java/com/example/demo/HelloController.java
 
 ### Eclipse ###
 .apt_generated

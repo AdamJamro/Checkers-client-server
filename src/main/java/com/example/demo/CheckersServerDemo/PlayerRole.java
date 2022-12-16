@@ -5,7 +5,7 @@ public enum PlayerRole implements Comparable<PlayerRole> {
 
     String side;
 
-    private PlayerRole(String side){
+    PlayerRole(String side){
         this.side = side;
     }
 

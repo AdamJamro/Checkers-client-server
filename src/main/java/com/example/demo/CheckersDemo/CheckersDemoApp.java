@@ -7,13 +7,12 @@ import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.media.AudioClip;
 import javafx.stage.Stage;
 
-import java.awt.event.MouseEvent;
-import java.util.Objects;
+import java.io.IOException;
+import java.net.Socket;
+import java.util.Arrays;
 
 public class CheckersDemoApp extends Application {
 
@@ -29,7 +28,7 @@ public class CheckersDemoApp extends Application {
 
     private final Label msgLabel = new Label("Hello Checkers");
 
-    private AudioClip clip = null;
+//    private AudioClip clip = null;
 
 
     // create root node for our demo app
@@ -99,6 +98,11 @@ public class CheckersDemoApp extends Application {
         Piece piece = new Piece(type, x, y);
 
         piece.setOnMouseReleased(e -> {
+            if (!client.isCurrentPlayer){
+                piece.abortMove();
+                return;
+            }
+
             int newX = toBoard(piece.getLayoutX());
             int newY = toBoard(piece.getLayoutY());
 
@@ -114,20 +118,24 @@ public class CheckersDemoApp extends Application {
             int y0 = toBoard(piece.getOldY());
 
             switch (result.getType()) {
-                case NONE -> piece.abortMove();
+                case NONE -> {
+                    piece.abortMove();
+                }
                 case NORMAL -> {
-                    pushCommand("NORMAL", x0, y0, newX, newY);
+                    client.pushCommand("NORMAL", x0, y0, newX, newY);
+                    System.out.println(client.in.nextLine());
 
                     piece.move(newX, newY);
                     board[x0][y0].setPiece(null);
                     board[newX][newY].setPiece(piece);
+                    client.isCurrentPlayer = false;
+
 //                    clip().play();
                 }
                 case KILL -> {
-//                    if (!pushCommand("KILL", x0, y0, newX, newY)) {
-//                        piece.abortMove();
-//                        break;
-//                    }
+                    client.pushCommand("KILL", x0, y0, newX, newY);
+                    System.out.println(client.in.nextLine());
+
                     piece.move(newX, newY);
                     board[x0][y0].setPiece(null);
                     board[newX][newY].setPiece(piece);
@@ -137,6 +145,7 @@ public class CheckersDemoApp extends Application {
                     Piece otherPiece = result.getPiece();
                     board[toBoard(otherPiece.getOldX())][toBoard(otherPiece.getOldY())].setPiece(null);
                     pieceGroup.getChildren().remove(otherPiece);
+                    client.isCurrentPlayer = false;
                 }
             }
         });
@@ -144,77 +153,68 @@ public class CheckersDemoApp extends Application {
         return piece;
     }
 
+    public static void updateBoard(String msg, Tile[][] board, Group pieceGroup){
 
-    private AudioClip clip(){
-        if (clip == null) {
-            String src = getClass().getResource("com/example/demo/CheckersDemo/capture.mp3").toString();
-            System.out.println("src " + src);
-            clip = new AudioClip(src);
-        }
-        return clip;
-    }
+        int[] commands = Arrays.stream(msg.split(":")).mapToInt(Integer::parseInt).toArray();
+        int oldX = commands[1];
+        int oldY = commands[2];
+        int newX = commands[3];
+        int newY = commands[4];
+        int killX = commands[5];
+        int killY = commands[6];
 
-
-    public void pushCommand(String command, int x0, int y0, int newX, int newY) {
-        client.out.println(command + ":" + x0 + ":" + y0 + ":" + newX + ":" + newY );
-    }
-
-    public void play() {
-        if (client.in.hasNextLine()) {
-            try {
-                var response = client.in.nextLine();
-                if (response.startsWith("VALID_MOVE")) {
-                    msgLabel.setText("Valid move, please wait");
-
-                }
-//                else if (response.startsWith("OPPONENT_MOVED")) {
-//                    var loc = Integer.parseInt(response.substring(15));
-//                    board[loc].setText(opponentMark);
-//                    board[loc].repaint();
-//                    messageLabel.setText("Opponent moved, your turn");
-//                } else if (response.startsWith("MESSAGE")) {
-//                    messageLabel.setText(response.substring(8));
-//                } else if (response.startsWith("VICTORY")) {
-//                    JOptionPane.showMessageDialog(frame, "Winner Winner");
-//                    break;
-//                } else if (response.startsWith("DEFEAT")) {
-//                    JOptionPane.showMessageDialog(frame, "Sorry you lost");
-//                    break;
-//                } else if (response.startsWith("TIE")) {
-//                    JOptionPane.showMessageDialog(frame, "Tie");
-//                    break;
-//                } else if (response.startsWith("OTHER_PLAYER_LEFT")) {
-//                    JOptionPane.showMessageDialog(frame, "Other player left");
-//                    break;
-//                }
-//
-//                out.println("QUIT");
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-//                socket.close();
-//                frame.dispose();
+        System.out.println("updateBoard:debug");
+        Platform.runLater(() -> {
+            board[newX][newY].setPiece(board[oldX][oldY].getPiece());
+            board[oldX][oldY].setPiece(null);
+            if ( msg.startsWith("KILL") ){
+                pieceGroup.getChildren().remove(board[killX][killY]);
+                board[killX][killY] = null;
             }
+        } );
+        System.out.println("updateBoard:debug2");
 
-        }
     }
+
+    public static void updateLabel(String msg, Label msgLabel){
+        Platform.runLater(() -> msgLabel.setText(msg));
+    }
+
+
+
+
+//    private AudioClip clip(){
+//        if (clip == null) {
+//            String src = getClass().getResource("com/example/demo/CheckersDemo/capture.mp3").toString();
+//            System.out.println("src " + src);
+//            clip = new AudioClip(src);
+//        }
+//        return clip;
+//    }
+
+
+    public void init() {
+        try {
+            client = new CheckersClientDemo(new Socket("127.0.0.1", 4545));
+            System.out.println("client connected with server");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("calling listener thread");
+        client.receiveMessageFromServer(board, pieceGroup, msgLabel);
+    }
+
 
     @Override
     public void start(Stage primaryStage) {
         Scene scene = new Scene(createContent());
         primaryStage.setTitle("CheckersApp");
         primaryStage.setScene(scene);
+
+
         System.out.println("debug:show()");
         primaryStage.show();
-    }
-
-
-    @Override
-    public void init() throws Exception {
-        client = new CheckersClientDemo();
-        client.run();
-        System.out.println("debug:init()");
-        super.init();
     }
 
     public static void main(String[] args) {

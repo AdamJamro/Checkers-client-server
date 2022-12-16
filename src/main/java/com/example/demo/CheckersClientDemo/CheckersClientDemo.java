@@ -2,7 +2,10 @@ package com.example.demo.CheckersClientDemo;
 
 
 
-import javafx.application.Platform;
+import com.example.demo.CheckersDemo.CheckersDemoApp;
+import com.example.demo.CheckersDemo.Tile;
+import javafx.scene.Group;
+import javafx.scene.control.Label;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -16,17 +19,17 @@ import java.net.Socket;
  * Deitel and Deitel’s “Java How to Program” book. For this project I created a
  * new application-level protocol called TTTP (for Tic Tac Toe Protocol), which
  * is entirely plain text. The messages of TTTP are:
- *
  * Client -> Server MOVE <n> QUIT
- *
  * Server -> Client WELCOME <char> VALID_MOVE OTHER_PLAYER_MOVED <n>
  * OTHER_PLAYER_LEFT VICTORY DEFEAT TIE MESSAGE <text>
  */
-public class CheckersClientDemo implements Runnable{
+public class CheckersClientDemo {
 
     private Socket socket;
     public Scanner in;
     public PrintWriter out;
+
+    public boolean isCurrentPlayer =true;
 
     /**
      * The main thread of the client will listen for messages from the server. The
@@ -38,9 +41,9 @@ public class CheckersClientDemo implements Runnable{
      * message.
      */
 
-    public CheckersClientDemo(){
+    public CheckersClientDemo(Socket socket){
         try {
-            socket = new Socket("127.0.0.1", 4545);
+            this.socket = socket;
             in = new Scanner(socket.getInputStream());
             out = new PrintWriter(socket.getOutputStream(), true);
         } catch (IOException e) {
@@ -50,18 +53,21 @@ public class CheckersClientDemo implements Runnable{
         }
 
         handShake();
-
-        System.out.println("try to run this thread");
     }
 
     private void handShake(){
+
         System.out.println("debug1");
         if(in.hasNextLine()){
             System.out.println("debug2");
             var response = in.nextLine();
             var side = response.substring(8);
             System.out.println("HANDSHAKE: " + side);
+            isCurrentPlayer = side.equalsIgnoreCase("WHITE");
+            var newResponse = in.nextLine();
+            System.out.println("HANDSHAKE: " + newResponse);
         }
+
     }
 
 
@@ -71,18 +77,42 @@ public class CheckersClientDemo implements Runnable{
             socket.close();
     }
 
-    @Override
-    public void run() {
-        Platform.runLater(() -> {
-        while(socket.isConnected()) {
-            if(in.hasNextLine())
-                System.out.println("in.nextLine: "+in.nextLine());
-            else{
 
-                System.out.println("runnable dies");
-                break;
+
+
+    public void receiveMessageFromServer(Tile[][] board, Group pieceGroup, Label msgLabel){
+        new Thread(() -> {
+            while (socket.isConnected()) {
+                if (!isCurrentPlayer){
+
+                    try {
+                        String msg = in.nextLine();
+                        System.out.println("just received:  "+msg);
+                        if (msg.startsWith("OPPONENT_MOVED")){
+                            CheckersDemoApp.updateBoard(msg, board, pieceGroup);
+                            isCurrentPlayer = true;
+                        } else if(msg.startsWith("MESSAGE")) {
+                            System.out.println(msg);
+                            CheckersDemoApp.updateLabel(msg, msgLabel);
+                        } else if(msg.startsWith("VICTORY") || msg.startsWith("DEFEAT")) {
+                            System.out.println(msg);
+                            socket.close();
+                        }
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
             }
-        }
-        });
+        }).start();
     }
+
+
+    public void pushCommand(String command, int oldX, int oldY, int newX, int newY, int killX, int killY) {
+        out.println(command + ":" + oldX + ":" + oldY + ":" + newX + ":" + newY + ":" + killX + ":" + killY );
+    }
+
+    public void pushCommand(String command, int oldX, int oldY, int newX, int newY) {
+        out.println(command + ":" + oldX + ":" + oldY + ":" + newX + ":" + newY + ":-1:-1" );
+    }
+
 }

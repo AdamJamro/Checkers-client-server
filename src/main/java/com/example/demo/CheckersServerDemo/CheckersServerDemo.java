@@ -29,10 +29,8 @@ public class CheckersServerDemo {
 
 //                Game game = new GameBuilder(clientSocketA);
                 Game game = new ClassicGame();
-                pool.execute(new Player(clientSocketA, PlayerRole.WHITE, game));
 
-                Socket clientSocketB = serverSocket.accept();
-                System.out.println("Client no." + ClientIndex++ + " has connected");
+                pool.execute(new Player(clientSocketA, PlayerRole.WHITE, game));
 
 
 
@@ -41,10 +39,12 @@ public class CheckersServerDemo {
 
 
 
-                if (!clientSocketA.isConnected () || !clientSocketB.isConnected() || game == null) {
+                if (!clientSocketA.isConnected () || game == null) {
                     continue;
                 }
 
+                Socket clientSocketB = serverSocket.accept();
+                System.out.println("Client no." + ClientIndex++ + " has connected");
                 pool.execute(new Player(clientSocketB, PlayerRole.BLACK, game));
 
             }
