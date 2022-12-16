@@ -28,7 +28,7 @@ public class Player implements Runnable {
     @Override
     public void run() {
         try{
-            setup();
+            handShake();
             processCommands();
         } catch (Exception e) {
             e.printStackTrace();
@@ -45,7 +45,7 @@ public class Player implements Runnable {
     }
 
 
-    private void setup() throws IOException {
+    private void handShake() throws IOException {
         input = new Scanner(socket.getInputStream());
         output = new PrintWriter(socket.getOutputStream(), true);
 
@@ -58,7 +58,7 @@ public class Player implements Runnable {
         } else {
             this.opponent = game.currentPlayer;
             this.opponent.opponent = this;
-            opponent.output.println("MESSAGE Waiting for opponent move");
+            opponent.output.println("MESSAGE Opponent has joined");
         }
     }
 
@@ -69,6 +69,7 @@ public class Player implements Runnable {
                 return;
             } else if (command.startsWith("NORMAL")) {
                 processMoveCommand(
+                        "NORMAL",
                         Integer.parseInt( command.split(":") [1] ),
                         Integer.parseInt( command.split(":") [2] ),
                         Integer.parseInt( command.split(":") [3] ),
@@ -77,27 +78,30 @@ public class Player implements Runnable {
                         -1
                 );
             } else if ( command.startsWith("KILL") ) {
+                int x0, y0, newX, newY;
                 processMoveCommand(
-                        Integer.parseInt( command.split(":") [1] ),
-                        Integer.parseInt( command.split(":") [2] ),
-                        Integer.parseInt( command.split(":") [3] ),
-                        Integer.parseInt( command.split(":") [4] ),
-                        Integer.parseInt( command.split(":") [5] ),
-                        Integer.parseInt( command.split(":") [6] )
+                        "KILL",
+                        x0=Integer.parseInt( command.split(":") [1] ),
+                        y0=Integer.parseInt( command.split(":") [2] ),
+                        newX=Integer.parseInt( command.split(":") [3] ),
+                        newY=Integer.parseInt( command.split(":") [4] ),
+                        (int) (x0 + newX) / 2,
+                        (int) (y0 + newY) / 2
                 );
             }
         }
     }
 
 
-    private void processMoveCommand(int oldX, int oldY, int newX, int newY, int killX, int killY) {
+    private void processMoveCommand(String type, int oldX, int oldY, int newX, int newY, int killX, int killY) {
 
         try {
-            game.move(oldX, oldY, newX, newY, this);
+            game.move(type, oldX, oldY, newX, newY, killX, killY, this);
 
 
             output.println("VALID_MOVE");
             opponent.output.println("OPPONENT_MOVED"
+                    + ":" + type
                     + ":" + oldX + ":" + oldY
                     + ":" + newX + ":" + newY
                     + ":" + killX + ":" + killY);

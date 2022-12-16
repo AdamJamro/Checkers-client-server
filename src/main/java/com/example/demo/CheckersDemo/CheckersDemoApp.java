@@ -118,12 +118,13 @@ public class CheckersDemoApp extends Application {
             int y0 = toBoard(piece.getOldY());
 
             switch (result.getType()) {
-                case NONE -> {
-                    piece.abortMove();
-                }
+                case NONE -> piece.abortMove();
                 case NORMAL -> {
                     client.pushCommand("NORMAL", x0, y0, newX, newY);
                     System.out.println(client.in.nextLine());
+                    //TODO: parse response from server
+
+
 
                     piece.move(newX, newY);
                     board[x0][y0].setPiece(null);
@@ -135,6 +136,7 @@ public class CheckersDemoApp extends Application {
                 case KILL -> {
                     client.pushCommand("KILL", x0, y0, newX, newY);
                     System.out.println(client.in.nextLine());
+                    //TODO: parse response from server
 
                     piece.move(newX, newY);
                     board[x0][y0].setPiece(null);
@@ -155,21 +157,27 @@ public class CheckersDemoApp extends Application {
 
     public static void updateBoard(String msg, Tile[][] board, Group pieceGroup){
 
-        int[] commands = Arrays.stream(msg.split(":")).mapToInt(Integer::parseInt).toArray();
-        int oldX = commands[1];
-        int oldY = commands[2];
-        int newX = commands[3];
-        int newY = commands[4];
-        int killX = commands[5];
-        int killY = commands[6];
+        msg = msg.substring(15);
+        String[] commands = msg.split(":");
+        int oldX = Integer.parseInt(commands[1]);
+        int oldY = Integer.parseInt(commands[2]);
+        int newX = Integer.parseInt(commands[3]);
+        int newY = Integer.parseInt(commands[4]);
+        int killX = Integer.parseInt(commands[5]);
+        int killY = Integer.parseInt(commands[6]);
 
         System.out.println("updateBoard:debug");
         Platform.runLater(() -> {
-            board[newX][newY].setPiece(board[oldX][oldY].getPiece());
+            Piece piece = board[oldX][oldY].getPiece(); //which piece opponent moved
+            piece.move(newX,newY); //update view
+
+            //update logic
+            board[newX][newY].setPiece(piece);
             board[oldX][oldY].setPiece(null);
-            if ( msg.startsWith("KILL") ){
-                pieceGroup.getChildren().remove(board[killX][killY]);
-                board[killX][killY] = null;
+            if ( commands[0].startsWith("KILL") ){
+                Piece otherPiece = board[killX][killY].getPiece();
+                pieceGroup.getChildren().remove(otherPiece);
+                board[killX][killY].setPiece(null); //update view
             }
         } );
         System.out.println("updateBoard:debug2");

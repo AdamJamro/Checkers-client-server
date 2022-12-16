@@ -63,9 +63,14 @@ public class CheckersClientDemo {
             var response = in.nextLine();
             var side = response.substring(8);
             System.out.println("HANDSHAKE: " + side);
-            isCurrentPlayer = side.equalsIgnoreCase("WHITE");
-            var newResponse = in.nextLine();
-            System.out.println("HANDSHAKE: " + newResponse);
+            if(side.equalsIgnoreCase("WHITE")){
+                isCurrentPlayer = false;
+                System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Waiting for opponent...
+                System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Opponent has joined...
+                isCurrentPlayer = true;
+            } else {
+                isCurrentPlayer = false;
+            }
         }
 
     }
@@ -83,7 +88,17 @@ public class CheckersClientDemo {
     public void receiveMessageFromServer(Tile[][] board, Group pieceGroup, Label msgLabel){
         new Thread(() -> {
             while (socket.isConnected()) {
-                if (!isCurrentPlayer){
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+//                System.out.println("IM IN LISTENING THREAD!");
+
+                if (!isCurrentPlayer && in.hasNextLine()){
+
+                    System.out.println("IM LISTENING!");
+
 
                     try {
                         String msg = in.nextLine();
@@ -96,6 +111,7 @@ public class CheckersClientDemo {
                             CheckersDemoApp.updateLabel(msg, msgLabel);
                         } else if(msg.startsWith("VICTORY") || msg.startsWith("DEFEAT")) {
                             System.out.println(msg);
+                            isCurrentPlayer = false;
                             socket.close();
                         }
                     } catch (Exception e){
