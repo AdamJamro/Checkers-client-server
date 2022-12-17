@@ -1,7 +1,5 @@
 package com.example.demo.CheckersServerDemo;
 
-import java.util.Arrays;
-
 public abstract class Game {
 
     //reference to the Player which has to move next
@@ -33,6 +31,20 @@ public abstract class Game {
         }
     }
 
+    private void showBoard() {
+        for (int y = 0; y < boardHeight; y++) {
+            for (int x = 0; x < boardWidth; x++) {
+                if (board[x][y] != null) {
+                    if (board[x][y].getColor() == PawnColor.WHITE)
+                        System.out.print('W');
+                    else System.out.print('B');
+                }
+                else System.out.print(' ');
+            }
+            System.out.println();
+        }
+    }
+
     public boolean hasWinner() {
         boolean hasBlackPawns = false;
         boolean hasWhitePawns = false;
@@ -49,10 +61,17 @@ public abstract class Game {
                 break;
             }
         }
-        return !hasWhitePawns || !hasBlackPawns;
+        return !hasWhitePawns || !hasBlackPawns; // || noMovesPossible(PawnColor.BLACK) || noMovesPossible(PawnColor.WHITE);
+    }
+
+    public abstract boolean canMove(int x, int y);
+
+    public abstract boolean noMovesPossible(PawnColor color);
+
+    public boolean onBoard(int x, int y) {
+        return x < boardHeight && x >= 0 && y < boardWidth && y >= 0;
     }
 
     public synchronized void move(String type, int oldX, int oldY, int newX, int newY, int killX, int killY, Player player) {
     }
-
 }

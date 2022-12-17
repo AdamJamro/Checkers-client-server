@@ -44,7 +44,6 @@ public class CommunicationTests {
         client = new CheckersClientDemo(new Socket("localhost",serverPort));
         client.pushCommand("NORMAL", 1,2,3,4);
 
-
         Assertions.assertNotNull(server);
         Assertions.assertNotNull(client);
         Assertions.assertEquals(client.in.nextLine(),"VALID_MOVE");

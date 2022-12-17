@@ -7,9 +7,9 @@ public class Pawn extends AbstractPawn {
     public Pawn(PawnColor color) {
         super(color);
         if (color == PawnColor.BLACK) {
-            this.dir = -1;
+            this.dir = 1;
         }
-        else this.dir = 1;
+        else this.dir = -1;
     }
 
     public PawnColor getColor() {

@@ -205,7 +205,6 @@ public class CheckersDemoApp extends Application {
         client.receiveMessageFromServer(board, pieceGroup, msgLabel);
     }
 
-
     //@Override
     public void start(Stage primaryStage) {
         Scene scene = new Scene(createContent());
