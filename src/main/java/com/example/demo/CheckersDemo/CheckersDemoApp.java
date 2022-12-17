@@ -28,7 +28,7 @@ public class CheckersDemoApp extends Application {
 
     private final Label msgLabel = new Label("Hello Checkers");
 
-//    private AudioClip clip = null;
+//  private AudioClip clip = null;
 
     // create root node for our demo app
     private Parent createContent() {

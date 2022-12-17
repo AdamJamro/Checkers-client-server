@@ -93,7 +93,6 @@ public class Player implements Runnable {
         }
     }
 
-
     private void processMoveCommand(String type, int oldX, int oldY, int newX, int newY, int killX, int killY) {
 
         try {

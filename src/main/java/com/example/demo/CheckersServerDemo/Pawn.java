@@ -1,7 +1,7 @@
 package com.example.demo.CheckersServerDemo;
 
 public class Pawn extends AbstractPawn {
-    //private final PawnColor color;
+
     private final int dir;
 
     public Pawn(PawnColor color) {

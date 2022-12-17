@@ -84,7 +84,6 @@ public class CheckersClientDemo {
                     throw new RuntimeException(e);
                 }
 //               System.out.println("IM IN LISTENING THREAD!");
-
                 if (!isCurrentPlayer && in.hasNextLine()){
                     System.out.println("IM LISTENING!");
 
