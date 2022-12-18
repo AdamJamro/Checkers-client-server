@@ -8,7 +8,6 @@ import java.util.Scanner;
 public class Player implements Runnable {
     private final Game game;
     private Player opponent;
-    //public PlayerRole playerRole;
     public PawnColor playerColor;
     public Socket socket;
     public Scanner input;
@@ -18,7 +17,6 @@ public class Player implements Runnable {
     public Player(Socket socket, PawnColor playerColor, Game game) {
         this.socket = socket;
         this.playerColor = playerColor;
-        //this.playerRole = playerRole;
         this.game = game;
     }
 
@@ -64,7 +62,7 @@ public class Player implements Runnable {
 
     private void processCommands() {
         while (input.hasNextLine()) {
-            var command = input.nextLine();
+            String command = input.nextLine();
             System.out.println(command);
             if (command.startsWith("QUIT")) {
                 return;
@@ -113,5 +111,4 @@ public class Player implements Runnable {
             output.println("MESSAGE " + e.getMessage());
         }
     }
-
 }
