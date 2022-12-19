@@ -1,7 +1,7 @@
 package com.example.demo.CheckersDemo;
 
 public enum PieceType {
-    RED(1), WHITE(-1);
+    BLACK(1), WHITE(-1);
 
     final int moveDir;
 

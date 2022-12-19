@@ -1,7 +1,6 @@
 package com.example.demo.CheckersDemo;
 
 import javafx.scene.layout.StackPane;
-import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 
@@ -42,7 +41,7 @@ public class Piece extends StackPane {
         bg.setTranslateY((TILE_SIZE - TILE_SIZE * 0.26 * 2) / 2 + TILE_SIZE * 0.07);
 
         Ellipse ellipse = new Ellipse(TILE_SIZE * 0.3125, TILE_SIZE * 0.26);
-        ellipse.setFill(type == PieceType.RED
+        ellipse.setFill(type == PieceType.BLACK
                 ? Color.valueOf("#c40003") : Color.valueOf("#fff9f4"));
 
         ellipse.setStroke(Color.BLACK);

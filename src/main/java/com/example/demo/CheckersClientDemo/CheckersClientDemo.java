@@ -2,6 +2,7 @@ package com.example.demo.CheckersClientDemo;
 
 import com.example.demo.CheckersDemo.CheckersDemoApp;
 import com.example.demo.CheckersDemo.Tile;
+import com.example.demo.CheckersServerDemo.PlayerRole;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
 
@@ -24,6 +25,8 @@ public class CheckersClientDemo {
     private Socket socket;
     public Scanner in;
     public PrintWriter out;
+
+    private String playerRole;
 
     public boolean isCurrentPlayer =true;
 
@@ -59,11 +62,13 @@ public class CheckersClientDemo {
             var side = response.substring(8);
             System.out.println("HANDSHAKE: " + side);
             if(side.equalsIgnoreCase("white")){ //WHITE
+                playerRole = "white";
                 isCurrentPlayer = false;
                 System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Waiting for opponent...
                 System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Opponent has joined...
                 isCurrentPlayer = true;
             } else {
+                playerRole = "black"; //"black";
                 isCurrentPlayer = false;
             }
         }
@@ -91,7 +96,7 @@ public class CheckersClientDemo {
                         String msg = in.nextLine();
                         System.out.println("just received:  "+msg);
                         if (msg.startsWith("OPPONENT_MOVED")){
-                            CheckersDemoApp.updateBoard(msg, board, pieceGroup);
+                            CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
                             isCurrentPlayer = true;
                         } else if(msg.startsWith("MESSAGE")) {
                             System.out.println(msg);
@@ -111,11 +116,31 @@ public class CheckersClientDemo {
 
 
     public void pushCommand(String command, int oldX, int oldY, int newX, int newY, int killX, int killY) {
-        out.println(command + ":" + oldX + ":" + oldY + ":" + newX + ":" + newY + ":" + killX + ":" + killY );
+        if(playerRole.equalsIgnoreCase("WHITE"))
+            out.println(command + ":" + oldX + ":" + oldY + ":" + newX + ":" + newY + ":" + killX + ":" + killY );
+        else
+            out.println(command + ":" + invertHorizontal(oldX) + ":" + invertHorizontal(oldY)
+                    + ":" + invertHorizontal(newX) + ":" + invertVertical(newY)
+                    + ":" + invertHorizontal(killX) + ":" + invertVertical(killY) );
     }
 
     public void pushCommand(String command, int oldX, int oldY, int newX, int newY) {
-        out.println(command + ":" + oldX + ":" + oldY + ":" + newX + ":" + newY + ":-1:-1" );
+        if(playerRole.equalsIgnoreCase("WHITE"))
+            out.println(command + ":" + oldX + ":" + oldY + ":" + newX + ":" + newY + ":-1:-1");
+        else
+            out.println(command + ":" + invertHorizontal(oldX) + ":" + invertHorizontal(oldY)
+                + ":" + invertHorizontal(newX) + ":" + invertVertical(newY) + ":-1:-1" );
     }
 
+    public static int invertVertical(int coordinate) {
+        return CheckersDemoApp.HEIGHT - 1 - coordinate;
+    }
+
+    public static int invertHorizontal(int coordinate){
+        return CheckersDemoApp.WIDTH - 1 - coordinate;
+    }
+
+    public String getPlayerRole(){
+        return this.playerRole;
+    }
 }
