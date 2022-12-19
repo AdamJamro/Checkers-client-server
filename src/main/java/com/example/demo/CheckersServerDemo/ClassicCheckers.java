@@ -46,9 +46,5 @@ public class ClassicCheckers extends Game {
         }
         return true;
     }
-
-    @Override
-    public synchronized void move(String type, int oldX, int oldY, int newX, int newY, int killX, int killY, Player player) {
-    }
 }
 

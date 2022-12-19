@@ -46,27 +46,24 @@ public abstract class Game {
     }
 
     public boolean hasWinner() {
-        boolean hasBlackPawns = false;
-        boolean hasWhitePawns = false;
-        for (int y = 0 ; y < boardHeight ; y++) {
-            for (int x = 0 ; x < boardWidth ; x++) {
-                if (board[x][y] != null) {
-                    if (board[x][y].getColor() == PawnColor.WHITE )
-                        hasWhitePawns = true;
-                    if (board[x][y].getColor() == PawnColor.BLACK )
-                        hasBlackPawns = true;
-                }
-            }
-            if (hasWhitePawns && hasBlackPawns) {
-                break;
-            }
-        }
-        return !hasWhitePawns || !hasBlackPawns; // || noMovesPossible(PawnColor.BLACK) || noMovesPossible(PawnColor.WHITE);
+        return !hasPawns(PawnColor.BLACK) || !hasPawns(PawnColor.WHITE); // || noMovesPossible(PawnColor.BLACK) || noMovesPossible(PawnColor.WHITE);
     }
 
     public abstract boolean canMove(int x, int y);
 
     public abstract boolean noMovesPossible(PawnColor color);
+
+    public boolean hasPawns(PawnColor color) {
+        for (int x = 0 ; x < boardHeight ; x++) {
+            for (int y = 0 ; y < boardWidth ; y++) {
+                if (board[x][y] != null) {
+                    if (board[x][y].getColor() == color)
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public boolean onBoard(int x, int y) {
         return x < boardHeight && x >= 0 && y < boardWidth && y >= 0;
@@ -81,6 +78,8 @@ public abstract class Game {
             throw new IllegalStateException("Cell already occupied");
         } else if (newX >= boardWidth || newY >= boardHeight) {
             throw new IllegalStateException("Pawns cannot leave the board");
+        } else if (board[oldX][oldY].getColor() != currentPlayer.playerColor) {
+            throw new IllegalStateException("Not your color");
         }
 
         AbstractPawn pawnToMove = board[oldX][oldY];
@@ -96,7 +95,7 @@ public abstract class Game {
 
     public void turnIntoKing(int x, int y) {
         if (board[x][y] == null || !(board[x][y] instanceof Pawn)) {
-            throw new IllegalStateException("Sth is wrong");
+            throw new IllegalStateException("Something is wrong");
         }
         if ((board[x][y].getColor() == PawnColor.WHITE && y == 0) || (board[x][y].getColor() == PawnColor.BLACK && y == boardHeight-1)) {
             board[x][y] = new King(board[x][y].getColor());
