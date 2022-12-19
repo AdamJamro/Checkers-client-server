@@ -2,8 +2,8 @@
 ### TO-DO Checkers
 - [x] server i mean server
 - [x] client
-- [ ] obracanie planszy?
-- [ ] kazdy player moze ruszac tylko swoim kolorem
+- [x] obracanie planszy?
+- [x] kazdy player moze ruszac tylko swoim kolorem
 - [ ] logika ClassicCheckers
 - [ ] dodac druga wersje warcab
 - [ ] dodac trzecia wersje warcab
