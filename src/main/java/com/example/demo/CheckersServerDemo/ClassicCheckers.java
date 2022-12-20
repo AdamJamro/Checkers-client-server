@@ -6,45 +6,31 @@ public class ClassicCheckers extends Game {
         super(8, 8);
     }
 
-    //sth is wrong here
     @Override
-    public boolean canMove(int x, int y) {
-        if (board[x][y] == null)
-            return false;
-
-        if (board[x][y] instanceof Pawn) {
-            Pawn pawn = (Pawn) board[x][y];
-            if (onBoard(x + pawn.getDir(), y-1)) {
-                if (board[x+pawn.getDir()][y-1] == null)
-                    return true;
-                else if (onBoard(x + 2 * pawn.getDir(), y-2)) {
-                    if (board[x + 2 * pawn.getDir()][y - 2] == null)
-                        return true;
+    public void generateBoard() {
+        board = new AbstractPawn[boardHeight][boardWidth];
+        for (int y = 0; y < boardHeight; y++) {
+            for (int x = 0; x < boardWidth; x++) {
+                if (y <= 2 && (x + y) % 2 != 0) {
+                    board[x][y] = new Pawn(PawnColor.BLACK);
                 }
-            }
-            if (onBoard(x + pawn.getDir(), y+1)) {
-                if (board[x+pawn.getDir()][y+1] == null)
-                    return true;
-                else if (onBoard(x + 2 * pawn.getDir(), y+2)) {
-                    if (board[x + 2 * pawn.getDir()][y + 2] == null)
-                        return true;
+                if (y >= boardHeight - 3 && (x + y) % 2 != 0) {
+                    board[x][y] = new Pawn(PawnColor.WHITE);
                 }
             }
         }
-        else { //King
-        }
-        return false;
     }
 
     @Override
     public boolean noMovesPossible(PawnColor color) {
         for (int i = 0; i < boardHeight; i++) {
             for (int j = 0; j < boardWidth; j++) {
-                if (board[i][j] != null && board[i][j].getColor() == color && canMove(i, j))
-                    return false;
+                if (board[i][j] != null) {
+                    if (board[i][j].getColor() == color && canMove(i, j))
+                        return false;
+                }
             }
         }
         return true;
     }
 }
-

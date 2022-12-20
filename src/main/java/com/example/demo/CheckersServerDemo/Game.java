@@ -14,22 +14,10 @@ public abstract class Game {
         this.boardWidth = boardWidth;
         this.boardHeight = boardHeight;
         generateBoard();
+        showBoard();
     }
 
-    private void generateBoard() {
-        board = new AbstractPawn[boardHeight][boardWidth];
-        for (int y = 0; y < boardHeight; y++){
-            for (int x = 0; x < boardWidth; x++){
-                if (y <= 2 && (x+y) % 2 != 0) {
-                    board[x][y] = new Pawn(PawnColor.BLACK); //PlayerRole.BLACK;
-                }
-                if (y >= boardHeight-3 && (x+y) % 2 != 0) {
-                    board[x][y] = new Pawn(PawnColor.WHITE); //PlayerRole.WHITE;
-                }
-                //System.out.println("board[" + x + "][" + y +"] =  " + board[x][y]);
-            }
-        }
-    }
+    public abstract void generateBoard();
 
     private void showBoard() {
         for (int y = 0; y < boardHeight; y++) {
@@ -49,7 +37,65 @@ public abstract class Game {
         return !hasPawns(PawnColor.BLACK) || !hasPawns(PawnColor.WHITE); // || noMovesPossible(PawnColor.BLACK) || noMovesPossible(PawnColor.WHITE);
     }
 
-    public abstract boolean canMove(int x, int y);
+    public boolean canMove(int x, int y) {
+        if (board[x][y] == null)
+            return false;
+
+        if (board[x][y] instanceof Pawn) {
+            Pawn pawn = (Pawn) board[x][y];
+            if (onBoard(x - 1, y + pawn.getDir())) {
+                if (board[x - 1][pawn.getDir()] == null)
+                    return true;
+                else if (onBoard(x - 2, y + 2 * pawn.getDir())) {
+                    if (board[x - 2][y + 2 * pawn.getDir()] == null)
+                        return true;
+                }
+            }
+            if (onBoard(x + 1, y + pawn.getDir())) {
+                if (board[x + 1][y + pawn.getDir()] == null)
+                    return true;
+                else if (onBoard(x + 2, y + 2 * pawn.getDir())) {
+                    if (board[x + 2][y + 2 * pawn.getDir()] == null)
+                        return true;
+                }
+            }
+        } else { //King
+            King king = (King) board[x][y];
+            int i = x - 1;
+            int j = y - 1;
+            while (onBoard(i,j)) {
+                if (board[i][j] == null)
+                    return true;
+                i--;
+                j--;
+            }
+            i = x + 1;
+            j = y - 1;
+            while (onBoard(i,j)) {
+                if (board[i][j] == null)
+                    return true;
+                i++;
+                j--;
+            }
+            i = x + 1;
+            j = y + 1;
+            while (onBoard(i,j)) {
+                if (board[i][j] == null)
+                    return true;
+                i++;
+                j++;
+            }
+            i = x - 1;
+            j = y + 1;
+            while (onBoard(i,j)) {
+                if (board[i][j] == null)
+                    return true;
+                i--;
+                j++;
+            }
+        }
+        return false;
+    }
 
     public abstract boolean noMovesPossible(PawnColor color);
 
@@ -100,5 +146,16 @@ public abstract class Game {
         if ((board[x][y].getColor() == PawnColor.WHITE && y == 0) || (board[x][y].getColor() == PawnColor.BLACK && y == boardHeight-1)) {
             board[x][y] = new King(board[x][y].getColor());
         }
+    }
+
+    public AbstractPawn getPawn(int x, int y) {
+        if (onBoard(x,y))
+            return board[x][y];
+        else return null;
+    }
+
+    public void setPawn(int x, int y, AbstractPawn abstractPawn) {
+        if (onBoard(x,y))
+            board[x][y] = abstractPawn;
     }
 }
