@@ -44,10 +44,11 @@ public abstract class Game {
         if (board[x][y] instanceof Pawn) {
             Pawn pawn = (Pawn) board[x][y];
             if (onBoard(x - 1, y + pawn.getDir())) {
-                if (board[x - 1][pawn.getDir()] == null)
+                if (board[x - 1][y + pawn.getDir()] == null)
                     return true;
                 else if (onBoard(x - 2, y + 2 * pawn.getDir())) {
-                    if (board[x - 2][y + 2 * pawn.getDir()] == null)
+                    if (board[x - 2][y + 2 * pawn.getDir()] == null
+                            && board[x - 1][y + pawn.getDir()].getColor() != pawn.getColor())
                         return true;
                 }
             }
@@ -55,7 +56,8 @@ public abstract class Game {
                 if (board[x + 1][y + pawn.getDir()] == null)
                     return true;
                 else if (onBoard(x + 2, y + 2 * pawn.getDir())) {
-                    if (board[x + 2][y + 2 * pawn.getDir()] == null)
+                    if (board[x + 2][y + 2 * pawn.getDir()] == null
+                            && board[x + 1][y + pawn.getDir()].getColor() != pawn.getColor())
                         return true;
                 }
             }
@@ -126,6 +128,8 @@ public abstract class Game {
             throw new IllegalStateException("Pawns cannot leave the board");
         } else if (board[oldX][oldY].getColor() != currentPlayer.playerColor) {
             throw new IllegalStateException("Not your color");
+        } else if (!canMove(oldX,oldY)) {
+            throw new IllegalStateException("This piece has no available moves!");
         }
 
         AbstractPawn pawnToMove = board[oldX][oldY];

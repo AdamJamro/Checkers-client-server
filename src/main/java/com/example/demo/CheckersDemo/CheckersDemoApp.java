@@ -66,6 +66,7 @@ public class CheckersDemoApp extends Application {
 
     private MoveResult tryMove(Piece piece, int newX, int newY) {
 
+        System.out.println("trying to move piece to:  " + newX + ", " + newY);
         System.out.println("piece type: "+piece.getType().toString());
         System.out.println("client role type: "+client.getPlayerRole());
 
@@ -79,16 +80,22 @@ public class CheckersDemoApp extends Application {
 
         int deltaX = newX - x0;
         int deltaY = newY - y0;
-        if (deltaX != 0 && (deltaY) < 0 ) {
+        if (Math.abs(deltaX) == -deltaY && (deltaY) != 0 ) {
 
             int x1 = x0;
             int y1 = y0;
+            int stepX = deltaX/Math.abs(deltaX);
+            int stepY = deltaY/Math.abs(deltaY);
 
             while (x1 != newX && y1 != newY){
-                x1 += deltaX/Math.abs(deltaX);
-                y1 += deltaY/Math.abs(deltaY);
-                if (board[x1][y1].hasPiece() && board[x1][y1].getPiece().getType() != piece.getType()) {
-                    return new MoveResult(MoveType.KILL, board[x1][y1].getPiece());
+                x1 += stepX;
+                y1 += stepY;
+                if (board[x1][y1].hasPiece()) {
+                    if (board[x1][y1].getPiece().getType() != piece.getType()
+                            && x1+stepX == newX && y1+stepY == newY){
+                        return new MoveResult(MoveType.KILL, board[x1][y1].getPiece());
+                    }
+                    return new MoveResult(MoveType.NONE);
                 }
             }
             return new MoveResult(MoveType.NORMAL);
@@ -141,31 +148,36 @@ public class CheckersDemoApp extends Application {
                 case NONE -> piece.abortMove();
                 case NORMAL -> {
                     client.pushCommand("NORMAL", x0, y0, newX, newY);
-                    System.out.println(client.in.nextLine());
-                    //TODO: parse response from server
+//                    String response = client.in.nextLine();
+//                    System.out.println("received after pushCmd: " + response);
+//                    if (!response.equalsIgnoreCase("VALID_MOVE")) {
+//                        piece.abortMove();
+//                        return;
+//                    }
 
-                    piece.move(newX, newY);
-                    board[x0][y0].setPiece(null);
-                    board[newX][newY].setPiece(piece);
-                    client.isCurrentPlayer = false;
+//                    piece.move(newX, newY);
+//                    board[x0][y0].setPiece(null);
+//                    board[newX][newY].setPiece(piece);
+//                    client.isCurrentPlayer = false;
 
 //                  clip().play();
                 }
                 case KILL -> {
-                    client.pushCommand("KILL", x0, y0, newX, newY);
-                    System.out.println(client.in.nextLine());
-                    //TODO: parse response from server
+                    Piece otherPiece = result.getPiece();
+                    int killX = toBoard(otherPiece.getOldX());
+                    int killY = toBoard(otherPiece.getOldY());
+                    client.pushCommand("KILL", x0, y0, newX, newY, killX, killY);
+//                    System.out.println(client.in.nextLine());
 
-                    piece.move(newX, newY);
-                    board[x0][y0].setPiece(null);
-                    board[newX][newY].setPiece(piece);
+//                    piece.move(newX, newY);
+//                    board[x0][y0].setPiece(null);
+//                    board[newX][newY].setPiece(piece);
 
 //                  clip().play();
 
-                    Piece otherPiece = result.getPiece();
-                    board[toBoard(otherPiece.getOldX())][toBoard(otherPiece.getOldY())].setPiece(null);
-                    pieceGroup.getChildren().remove(otherPiece);
-                    client.isCurrentPlayer = false;
+//                    board[toBoard(otherPiece.getOldX())][toBoard(otherPiece.getOldY())].setPiece(null);
+//                    pieceGroup.getChildren().remove(otherPiece);
+//                    client.isCurrentPlayer = false;
                 }
             }
         });
@@ -175,15 +187,25 @@ public class CheckersDemoApp extends Application {
 
     public static void updateBoard(String msg, Tile[][] board, Group pieceGroup, String playerRole){
 
-        msg = msg.substring(15);
+        String cmd0 = msg.split(":")[0];
+        int len = cmd0.length()+1;
+//        System.out.println("msg len: "+len);
+        msg = msg.substring(len);
         String[] commands = msg.split(":");
 
-            int oldX = Integer.parseInt(commands[1]);
-            int oldY = Integer.parseInt(commands[2]);
-            int newX = Integer.parseInt(commands[3]);
-            int newY = Integer.parseInt(commands[4]);
-            int killX = Integer.parseInt(commands[5]);
-            int killY = Integer.parseInt(commands[6]);
+        int oldX = Integer.parseInt(commands[1]);
+        int oldY = Integer.parseInt(commands[2]);
+
+        if (cmd0.startsWith("INVALID_MOVE")){
+            board[oldX][oldY].getPiece().abortMove();
+            return;
+        }
+
+        int newX = Integer.parseInt(commands[3]);
+        int newY = Integer.parseInt(commands[4]);
+        int killX = Integer.parseInt(commands[5]);
+        int killY = Integer.parseInt(commands[6]);
+
         if (playerRole.equalsIgnoreCase("BLACK")){
             oldX = CheckersClientDemo.invertHorizontal(oldX);
             oldY = CheckersClientDemo.invertVertical(oldY);
@@ -192,6 +214,8 @@ public class CheckersDemoApp extends Application {
             killX = CheckersClientDemo.invertHorizontal(killX);
             killY = CheckersClientDemo.invertVertical(killY);
         }
+
+
 
         System.out.println("updateBoard:debug");
         int finalOldX = oldX;
@@ -204,15 +228,17 @@ public class CheckersDemoApp extends Application {
         System.out.println(finalOldX+":"+finalOldY+":"+finalNewX+":"+finalNewY);
         Platform.runLater(() -> {
             Piece piece = board[finalOldX][finalOldY].getPiece(); //which piece opponent moved
-            piece.move(finalNewX, finalNewY); //update view
 
+            piece.move(finalNewX, finalNewY); //update view
             //update logic
             board[finalNewX][finalNewY].setPiece(piece);
             board[finalOldX][finalOldY].setPiece(null);
+
             if ( commands[0].startsWith("KILL") ){
                 Piece otherPiece = board[finalKillX][finalKillY].getPiece();
-                pieceGroup.getChildren().remove(otherPiece);
-                board[finalKillX][finalKillY].setPiece(null); //update view
+
+                board[finalKillX][finalKillY].setPiece(null); //update logic&view
+                pieceGroup.getChildren().remove(otherPiece); //update logic
             }
         } );
         System.out.println("updateBoard:debug2");
@@ -237,7 +263,9 @@ public class CheckersDemoApp extends Application {
             client = new CheckersClientDemo(new Socket("localhost", 4545));
             System.out.println("client connected with server");
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            System.out.println("Unable to establish connection with server");
+            System.exit(1);
         }
 
         System.out.println("calling listener thread");

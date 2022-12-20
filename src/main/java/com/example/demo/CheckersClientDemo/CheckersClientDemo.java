@@ -22,9 +22,9 @@ import java.net.Socket;
  */
 public class CheckersClientDemo {
 
-    private Socket socket;
-    public Scanner in;
-    public PrintWriter out;
+    private final Socket socket;
+    public final Scanner in;
+    public final PrintWriter out;
 
     private String playerRole;
 
@@ -40,16 +40,10 @@ public class CheckersClientDemo {
      * message.
      */
 
-    public CheckersClientDemo(Socket socket){
-        try {
-            this.socket = socket;
-            in = new Scanner(socket.getInputStream());
-            out = new PrintWriter(socket.getOutputStream(), true);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Unable to establish connection with server");
-            System.exit(1);
-        }
+    public CheckersClientDemo(Socket socket) throws IOException{
+        this.socket = socket;
+        this.in = new Scanner(socket.getInputStream());
+        this.out = new PrintWriter(socket.getOutputStream(), true);
         handShake();
     }
 
@@ -68,7 +62,7 @@ public class CheckersClientDemo {
                 System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Opponent has joined...
                 isCurrentPlayer = true;
             } else {
-                playerRole = "black"; //"black";
+                playerRole = "black";
                 isCurrentPlayer = false;
             }
         }
@@ -84,23 +78,26 @@ public class CheckersClientDemo {
         new Thread(() -> {
             while (socket.isConnected()) {
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(50);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-//               System.out.println("IM IN LISTENING THREAD!");
-                if (!isCurrentPlayer && in.hasNextLine()){
+                if (in.hasNextLine()){
                     System.out.println("IM LISTENING!");
-
                     try {
                         String msg = in.nextLine();
-                        System.out.println("just received:  "+msg);
-                        if (msg.startsWith("OPPONENT_MOVED")){
+                        System.out.println("just received: "+msg);
+                        if (msg.startsWith("VALID_MOVE")){
+                            CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
+                            isCurrentPlayer = false;
+                        } else if (msg.startsWith("INVALID_MOVE")) {
+                            CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
+                        } else if (msg.startsWith("OPPONENT_MOVED")){
                             CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
                             isCurrentPlayer = true;
                         } else if(msg.startsWith("MESSAGE")) {
                             System.out.println(msg);
-                            CheckersDemoApp.updateLabel(msg, msgLabel);
+                            CheckersDemoApp.updateLabel(msg.substring("MESSAGE ".length()), msgLabel);
                         } else if(msg.startsWith("VICTORY") || msg.startsWith("DEFEAT")) {
                             System.out.println(msg);
                             isCurrentPlayer = false;

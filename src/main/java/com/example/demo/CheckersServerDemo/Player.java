@@ -63,29 +63,30 @@ public class Player implements Runnable {
     private void processCommands() {
         while (input.hasNextLine()) {
             String command = input.nextLine();
+            String[] params = command.split(":");
             System.out.println(command);
             if (command.startsWith("QUIT")) {
                 return;
             } else if (command.startsWith("NORMAL")) {
                 processMoveCommand(
                         "NORMAL",
-                        Integer.parseInt( command.split(":") [1] ),
-                        Integer.parseInt( command.split(":") [2] ),
-                        Integer.parseInt( command.split(":") [3] ),
-                        Integer.parseInt( command.split(":") [4] ),
+                        Integer.parseInt(  params[1] ),
+                        Integer.parseInt( params[2] ),
+                        Integer.parseInt( params[3] ),
+                        Integer.parseInt( params[4] ),
                         -1,
                         -1
                 );
             } else if ( command.startsWith("KILL") ) {
-                int x0, y0, newX, newY;
+                int x0, y0, newX, newY, killX, killY;
                 processMoveCommand(
                         "KILL",
-                        x0=Integer.parseInt( command.split(":") [1] ),
-                        y0=Integer.parseInt( command.split(":") [2] ),
-                        newX=Integer.parseInt( command.split(":") [3] ),
-                        newY=Integer.parseInt( command.split(":") [4] ),
-                        (int) (x0 + newX) / 2,
-                        (int) (y0 + newY) / 2
+                        x0=Integer.parseInt( params[1] ),
+                        y0=Integer.parseInt( params[2] ),
+                        newX=Integer.parseInt( params[3] ),
+                        newY=Integer.parseInt( params[4] ),
+                        killX=Integer.parseInt( params[5] ), //(newX - x0) > 0 ? newX - 1 : newX + 1,
+                        killY=Integer.parseInt( params[6] )//(newY - y0) > 0 ? newY - 1 : newY + 1
                 );
             }
         }
@@ -94,7 +95,11 @@ public class Player implements Runnable {
     private void processMoveCommand(String type, int oldX, int oldY, int newX, int newY, int killX, int killY) {
         try {
             game.move(type, oldX, oldY, newX, newY, killX, killY, this);
-            output.println("VALID_MOVE");
+            output.println("VALID_MOVE"
+                    + ":" + type
+                    + ":" + oldX + ":" + oldY
+                    + ":" + newX + ":" + newY
+                    + ":" + killX + ":" + killY);
             opponent.output.println("OPPONENT_MOVED"
                     + ":" + type
                     + ":" + oldX + ":" + oldY

@@ -31,7 +31,8 @@ public class CommunicationTests {
     @Test
     void connectionTest() throws IOException{
 
-        CheckersClientDemo client = null;
+        CheckersClientDemo client1 = null;
+        CheckersClientDemo client2 = null;
         CheckersServerDemo server = runServer();
 
 //        new Thread(new Runnable() {
@@ -41,13 +42,20 @@ public class CommunicationTests {
 //            }
 //        });
 
-        client = new CheckersClientDemo(new Socket("localhost",serverPort));
-        client.pushCommand("NORMAL", 1,2,3,4);
+        client1 = new CheckersClientDemo(new Socket("localhost",serverPort));
+        client2 = new CheckersClientDemo(new Socket("localhost",serverPort));
+        client1.pushCommand("NORMAL", 1,2,3,4);
 
         Assertions.assertNotNull(server);
-        Assertions.assertNotNull(client);
-        Assertions.assertEquals(client.in.nextLine(),"VALID_MOVE");
+        Assertions.assertNotNull(client1);
+        Assertions.assertEquals(client1.in.nextLine(),"VALID_MOVE");
+
+
+        client2.pushCommand("NORMAL", 1, 0, 4, 3); //invalid move
+
+        Assertions.assertEquals(client2.in.nextLine(), ("move against the rules!"));
     }
+
 
     //TODO: MAKE MORE TESTS
 }
