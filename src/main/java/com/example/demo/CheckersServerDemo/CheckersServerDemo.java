@@ -25,12 +25,8 @@ public class CheckersServerDemo {
                 Socket clientSocketA = serverSocket.accept();
                 System.out.println("Client no." + ClientIndex++ + " has connected");
 
-//              Game game = new GameBuilder(clientSocketA);
                 Game game = new ClassicCheckers();
                 pool.execute(new Player(clientSocketA, PawnColor.WHITE, game));
-
-//              Player playerA = createPlayer(game, clientSocketA);
-//              Player playerB = createPlayer(game, clientSocketB);
 
                 if (!clientSocketA.isConnected () || game == null) {
                     continue;

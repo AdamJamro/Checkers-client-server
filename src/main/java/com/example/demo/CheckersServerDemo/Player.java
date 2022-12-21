@@ -70,7 +70,7 @@ public class Player implements Runnable {
             } else if (command.startsWith("NORMAL")) {
                 processMoveCommand(
                         "NORMAL",
-                        Integer.parseInt(  params[1] ),
+                        Integer.parseInt( params[1] ),
                         Integer.parseInt( params[2] ),
                         Integer.parseInt( params[3] ),
                         Integer.parseInt( params[4] ),

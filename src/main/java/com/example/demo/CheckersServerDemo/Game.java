@@ -9,12 +9,11 @@ public abstract class Game {
     final int boardHeight;
 
     // grid n by m, null if empty, WHITE whilst being occupied by a white pawn, BLACK - black pawn
-    //PlayerRole[][] board;
     protected Game(int boardWidth, int boardHeight) {
         this.boardWidth = boardWidth;
         this.boardHeight = boardHeight;
         generateBoard();
-        showBoard();
+        //showBoard();
     }
 
     public abstract void generateBoard();
@@ -34,7 +33,7 @@ public abstract class Game {
     }
 
     public boolean hasWinner() {
-        return !hasPawns(PawnColor.BLACK) || !hasPawns(PawnColor.WHITE); // || noMovesPossible(PawnColor.BLACK) || noMovesPossible(PawnColor.WHITE);
+        return !hasPawns(PawnColor.BLACK) || !hasPawns(PawnColor.WHITE) || noMovesPossible(PawnColor.BLACK) || noMovesPossible(PawnColor.WHITE);
     }
 
     public boolean canMove(int x, int y) {
@@ -43,25 +42,17 @@ public abstract class Game {
 
         if (board[x][y] instanceof Pawn) {
             Pawn pawn = (Pawn) board[x][y];
-            if (onBoard(x - 1, y + pawn.getDir())) {
-                if (board[x - 1][y + pawn.getDir()] == null)
-                    return true;
-                else if (onBoard(x - 2, y + 2 * pawn.getDir())) {
-                    if (board[x - 2][y + 2 * pawn.getDir()] == null
-                            && board[x - 1][y + pawn.getDir()].getColor() != pawn.getColor())
-                        return true;
-                }
-            }
-            if (onBoard(x + 1, y + pawn.getDir())) {
-                if (board[x + 1][y + pawn.getDir()] == null)
-                    return true;
-                else if (onBoard(x + 2, y + 2 * pawn.getDir())) {
-                    if (board[x + 2][y + 2 * pawn.getDir()] == null
-                            && board[x + 1][y + pawn.getDir()].getColor() != pawn.getColor())
-                        return true;
-                }
-            }
-        } else { //King
+            if (tileAvailable(x - 1, y + pawn.getDir()))
+                return true;
+            else if (tileAvailable(x - 2, y + 2 * pawn.getDir()) && board[x - 1][y + pawn.getDir()].getColor() != pawn.getColor())
+                return true;
+
+            if (tileAvailable(x + 1, y + pawn.getDir()))
+                return true;
+            else if (tileAvailable(x + 2, y + 2 * pawn.getDir()) && board[x + 1][y + pawn.getDir()].getColor() != pawn.getColor())
+                return true;
+
+        } else {
             King king = (King) board[x][y];
             int i = x - 1;
             int j = y - 1;
@@ -99,7 +90,17 @@ public abstract class Game {
         return false;
     }
 
-    public abstract boolean noMovesPossible(PawnColor color);
+    public boolean noMovesPossible(PawnColor color) {
+        for (int i = 0; i < boardHeight; i++) {
+            for (int j = 0; j < boardWidth; j++) {
+                if (board[i][j] != null) {
+                    if (board[i][j].getColor() == color && canMove(i, j))
+                        return false;
+                }
+            }
+        }
+        return true;
+    }
 
     public boolean hasPawns(PawnColor color) {
         for (int x = 0 ; x < boardHeight ; x++) {
@@ -115,6 +116,13 @@ public abstract class Game {
 
     public boolean onBoard(int x, int y) {
         return x < boardHeight && x >= 0 && y < boardWidth && y >= 0;
+    }
+
+    public boolean tileAvailable(final int x, final int y) {
+        if (x >= 0 && x < boardWidth && y >= 0 && y < boardHeight) {
+            return (board[x][y] == null);
+        }
+        return false;
     }
 
     public synchronized void move(String type, int oldX, int oldY, int newX, int newY, int killX, int killY, Player player) {
@@ -134,21 +142,20 @@ public abstract class Game {
 
         AbstractPawn pawnToMove = board[oldX][oldY];
         board[oldX][oldY] = null;
-        board[newX][newY] = pawnToMove; //currentPlayer.playerColor;
+        board[newX][newY] = pawnToMove;
 
         if (type.equalsIgnoreCase("KILL")) {
             board[killX][killY] = null;
         }
 
+        makeKingIfCond(newX, newY);
         currentPlayer = currentPlayer.getOpponent();
     }
 
-    public void turnIntoKing(int x, int y) {
-        if (board[x][y] == null || !(board[x][y] instanceof Pawn)) {
-            throw new IllegalStateException("Something is wrong");
-        }
-        if ((board[x][y].getColor() == PawnColor.WHITE && y == 0) || (board[x][y].getColor() == PawnColor.BLACK && y == boardHeight-1)) {
+    public void makeKingIfCond(int x, int y) {
+        if (((board[x][y].getColor() == PawnColor.WHITE && y == 0) || (board[x][y].getColor() == PawnColor.BLACK && y == boardHeight - 1)) && board[x][y] instanceof Pawn)  {
             board[x][y] = new King(board[x][y].getColor());
+            //System.out.println("mamy damke!");
         }
     }
 

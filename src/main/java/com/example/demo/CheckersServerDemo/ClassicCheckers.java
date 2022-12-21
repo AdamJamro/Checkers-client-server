@@ -20,17 +20,4 @@ public class ClassicCheckers extends Game {
             }
         }
     }
-
-    @Override
-    public boolean noMovesPossible(PawnColor color) {
-        for (int i = 0; i < boardHeight; i++) {
-            for (int j = 0; j < boardWidth; j++) {
-                if (board[i][j] != null) {
-                    if (board[i][j].getColor() == color && canMove(i, j))
-                        return false;
-                }
-            }
-        }
-        return true;
-    }
 }
