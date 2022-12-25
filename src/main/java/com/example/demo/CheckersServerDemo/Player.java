@@ -113,7 +113,7 @@ public class Player implements Runnable {
                 opponent.output.println("DRAW");
             }
         } catch (IllegalStateException e) {
-            output.println("MESSAGE " + e.getMessage());
+            output.println("INVALID_MOVE:"+oldX+":"+oldY+": " + e.getMessage());
         }
     }
 }

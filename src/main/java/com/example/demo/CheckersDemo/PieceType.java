@@ -1,11 +1,17 @@
 package com.example.demo.CheckersDemo;
 
 public enum PieceType {
-    BLACK(1), WHITE(-1);
 
-    final int moveDir;
+    BLACK, WHITE;
 
-    PieceType(int moveDir) {
-        this.moveDir = moveDir;
-    }
+
+//    int gameMode;
+
+//    PieceType(int gameMode) {
+//        this.gameMode = gameMode;
+//    }
+
+//    public void setGameMode(int gameMode) {
+//        this.gameMode = gameMode;
+//    }
 }

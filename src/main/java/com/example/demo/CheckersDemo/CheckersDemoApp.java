@@ -7,11 +7,17 @@ import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.effect.Effect;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Ellipse;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.Socket;
+
+import static com.example.demo.CheckersDemo.Piece.REGULAR_PAWN;
+import static com.example.demo.CheckersDemo.PieceType.*;
 
 public class CheckersDemoApp extends Application {
 
@@ -47,11 +53,11 @@ public class CheckersDemoApp extends Application {
                 Piece piece = null;
 
                 if (y <= 2 && (x + y) % 2 != 0) {
-                    piece = makePiece(client.getPlayerRole().equalsIgnoreCase("WHITE")? PieceType.BLACK : PieceType.WHITE, x, y);
+                    piece = makePiece(client.getPlayerRole().equalsIgnoreCase("WHITE")? BLACK : WHITE, x, y);
                 }
 
                 if (y >= WIDTH - 3 && (x + y) % 2 != 0) {
-                    piece = makePiece(client.getPlayerRole().equalsIgnoreCase("WHITE")? PieceType.WHITE : PieceType.BLACK, x, y);
+                    piece = makePiece(client.getPlayerRole().equalsIgnoreCase("WHITE")? WHITE : BLACK, x, y);
                 }
 
                 if (piece != null) {
@@ -64,6 +70,7 @@ public class CheckersDemoApp extends Application {
         return root;
     }
 
+    //process potential move request to server
     private MoveResult tryMove(Piece piece, int newX, int newY) {
 
         System.out.println("trying to move piece to:  " + newX + ", " + newY);
@@ -77,27 +84,39 @@ public class CheckersDemoApp extends Application {
 
         int x0 = toBoard(piece.getOldX());
         int y0 = toBoard(piece.getOldY());
-
         int deltaX = newX - x0;
         int deltaY = newY - y0;
-        if (Math.abs(deltaX) == -deltaY && (deltaY) != 0 ) {
+
+        if ((Math.abs(deltaX) == -deltaY && (deltaY) >= -2 && piece.getGamemode() == REGULAR_PAWN)
+            || (Math.abs(deltaX) == Math.abs(deltaY) && (deltaY) != 0 && piece.getGamemode() == Piece.KING_PAWN)) {
 
             int x1 = x0;
             int y1 = y0;
             int stepX = deltaX/Math.abs(deltaX);
             int stepY = deltaY/Math.abs(deltaY);
+            int hurdles = Math.abs(deltaY);
 
             while (x1 != newX && y1 != newY){
                 x1 += stepX;
                 y1 += stepY;
                 if (board[x1][y1].hasPiece()) {
                     if (board[x1][y1].getPiece().getType() != piece.getType()
-                            && x1+stepX == newX && y1+stepY == newY){
+                            && x1+stepX == newX
+                            && y1+stepY == newY){
                         return new MoveResult(MoveType.KILL, board[x1][y1].getPiece());
                     }
                     return new MoveResult(MoveType.NONE);
                 }
+                hurdles -= 1;
+
             }
+
+            if (piece.getGamemode() == REGULAR_PAWN
+                && deltaY == -2
+                && hurdles == 0) {
+                return new MoveResult(MoveType.NONE);
+            }
+
             return new MoveResult(MoveType.NORMAL);
         }
 
@@ -185,19 +204,23 @@ public class CheckersDemoApp extends Application {
         return piece;
     }
 
+
+
     public static void updateBoard(String msg, Tile[][] board, Group pieceGroup, String playerRole){
 
         String cmd0 = msg.split(":")[0];
-        int len = cmd0.length()+1;
+        int len = cmd0.length();
 //        System.out.println("msg len: "+len);
-        msg = msg.substring(len);
+        msg = msg.substring(len+1);
         String[] commands = msg.split(":");
 
         int oldX = Integer.parseInt(commands[1]);
         int oldY = Integer.parseInt(commands[2]);
 
         if (cmd0.startsWith("INVALID_MOVE")){
-            board[oldX][oldY].getPiece().abortMove();
+            int finalOldX = oldX;
+            int finalOldY = oldY;
+            Platform.runLater(() -> board[finalOldX][finalOldY].getPiece().abortMove());
             return;
         }
 
@@ -227,7 +250,7 @@ public class CheckersDemoApp extends Application {
         System.out.println(oldX+":"+oldY+":"+newX+":"+newY);
         System.out.println(finalOldX+":"+finalOldY+":"+finalNewX+":"+finalNewY);
         Platform.runLater(() -> {
-            Piece piece = board[finalOldX][finalOldY].getPiece(); //which piece opponent moved
+            Piece piece = board[finalOldX][finalOldY].getPiece(); //which piece was moved
 
             piece.move(finalNewX, finalNewY); //update view
             //update logic
@@ -240,6 +263,27 @@ public class CheckersDemoApp extends Application {
                 board[finalKillX][finalKillY].setPiece(null); //update logic&view
                 pieceGroup.getChildren().remove(otherPiece); //update logic
             }
+
+
+            if (piece.getGamemode() == REGULAR_PAWN){
+                if (
+                        (
+                                ((finalNewY + 1) == HEIGHT)
+                                && (piece.getType() ==
+                                        (client.getPlayerRole().equalsIgnoreCase("WHITE")
+                                                ? BLACK : WHITE))
+
+                        ) || (
+                                (finalNewY == 0)
+                                && (piece.getType() ==
+                                        (client.getPlayerRole().equalsIgnoreCase("WHITE")
+                                                ? WHITE : BLACK))
+                        )
+                    ) {
+                        piece.turnIntoKing();
+                    }
+            }
+
         } );
         System.out.println("updateBoard:debug2");
 

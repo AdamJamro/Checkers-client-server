@@ -69,9 +69,15 @@ public class CheckersClientDemo {
 
     }
 
-    private void safeClose(Socket socket) throws IOException {
-        if (socket != null)
-            socket.close();
+    private void safeClose(Socket socket) {
+        if (socket != null) {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.err.println("couldn't close the socket");
+            }
+        }
     }
 
     public void receiveMessageFromServer(Tile[][] board, Group pieceGroup, Label msgLabel){
@@ -92,6 +98,7 @@ public class CheckersClientDemo {
                             isCurrentPlayer = false;
                         } else if (msg.startsWith("INVALID_MOVE")) {
                             CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
+                            CheckersDemoApp.updateLabel(msg.substring("INVALID_MOVE:?:?: ".length()), msgLabel);
                         } else if (msg.startsWith("OPPONENT_MOVED")){
                             CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
                             isCurrentPlayer = true;
@@ -101,7 +108,7 @@ public class CheckersClientDemo {
                         } else if(msg.startsWith("VICTORY") || msg.startsWith("DEFEAT")) {
                             System.out.println(msg);
                             isCurrentPlayer = false;
-                            socket.close();
+                            safeClose(socket);
                         }
                     } catch (Exception e){
                         e.printStackTrace();

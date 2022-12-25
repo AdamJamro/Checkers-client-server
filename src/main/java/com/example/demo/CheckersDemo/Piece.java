@@ -1,5 +1,6 @@
 package com.example.demo.CheckersDemo;
 
+import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
@@ -10,9 +11,11 @@ import static com.example.demo.CheckersDemo.CheckersDemoApp.TILE_SIZE;
 public class Piece extends StackPane {
 
     private final PieceType type;
-
     private double mouseX, mouseY;
     private double oldX, oldY;
+
+    public static final int REGULAR_PAWN = 0, KING_PAWN = 1;
+    private int gamemode = REGULAR_PAWN;
 
     public PieceType getType() {
         return type;
@@ -70,5 +73,29 @@ public class Piece extends StackPane {
 
     public void abortMove() {
         relocate(oldX, oldY);
+    }
+
+    public void turnIntoKing(){
+        this.setGamemode(KING_PAWN);
+
+        Ellipse parent = (Ellipse) this.getChildren().get(1);
+        double parentWidth = parent.getRadiusX();
+        double parentHeight = parent.getRadiusY();
+
+        Ellipse kingMark = new Ellipse(parentWidth * 0.4 , parentHeight * 0.3);
+        kingMark.setFill(Color.DARKGOLDENROD);
+        kingMark.setTranslateX(parent.getTranslateX());
+        kingMark.setTranslateY(parent.getTranslateY());
+        kingMark.setVisible(true);
+        this.getChildren().add(kingMark);
+        System.out.println("KING DEBUG");
+    }
+
+    public int getGamemode() {
+        return gamemode;
+    }
+
+    public void setGamemode(int gamemode) {
+        this.gamemode = gamemode;
     }
 }

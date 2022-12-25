@@ -136,9 +136,9 @@ public abstract class Game {
             throw new IllegalStateException("Pawns cannot leave the board");
         } else if (board[oldX][oldY].getColor() != currentPlayer.playerColor) {
             throw new IllegalStateException("Not your color");
-        } else if (!canMove(oldX,oldY)) {
+        } /*else if (!canMove(oldX,oldY)) {
             throw new IllegalStateException("This piece has no available moves!");
-        }
+        }*/
 
         AbstractPawn pawnToMove = board[oldX][oldY];
         board[oldX][oldY] = null;
