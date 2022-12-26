@@ -30,7 +30,7 @@ public class CheckersClientDemo {
 
     private String playerRole;
 
-    private int totalElapsedTime = 0, currentPlayerElapsedTime = 0;
+    private long totalElapsedTime = 0, currentPlayerElapsedTime = 0;
     private long gameStartTime, start, end;
 
     public boolean isCurrentPlayer =true;
@@ -119,10 +119,10 @@ public class CheckersClientDemo {
                             System.out.println(msg);
                             isCurrentPlayer = false;
                             currentPlayerElapsedTime += end - start;
-                            totalElapsedTime = (int) ((int) System.nanoTime() - gameStartTime);
+                            totalElapsedTime = System.nanoTime() - gameStartTime;
                             Platform.runLater(() -> ModalPopupWindow.display("Results",msg,
-                                    "Elapsed move time -> " + String.valueOf(currentPlayerElapsedTime ) + ":"
-                                            + "Total elapsed move time (both players) -> " + String.valueOf( totalElapsedTime )));
+                                    "Elapsed move time -> " + String.valueOf(currentPlayerElapsedTime/1000000000.0) + "s:"
+                                            + "Total elapsed move time (both players) -> " + String.valueOf( totalElapsedTime/1000000000.0 ) + "s"));
                             safeClose(socket);
                         }
                     } catch (Exception e){
