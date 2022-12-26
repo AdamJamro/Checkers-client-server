@@ -1,8 +1,10 @@
 package com.example.demo.CheckersClientDemo;
 
 import com.example.demo.CheckersDemo.CheckersDemoApp;
+import com.example.demo.CheckersDemo.ModalPopupWindow;
 import com.example.demo.CheckersDemo.Tile;
 import com.example.demo.CheckersServerDemo.PlayerRole;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
 
@@ -27,6 +29,9 @@ public class CheckersClientDemo {
     public final PrintWriter out;
 
     private String playerRole;
+
+    private int totalElapsedTime = 0, currentPlayerElapsedTime = 0;
+    private long gameStartTime, start, end;
 
     public boolean isCurrentPlayer =true;
 
@@ -61,9 +66,11 @@ public class CheckersClientDemo {
                 System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Waiting for opponent...
                 System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Opponent has joined...
                 isCurrentPlayer = true;
+                gameStartTime = System.nanoTime();
             } else {
                 playerRole = "black";
                 isCurrentPlayer = false;
+                gameStartTime = System.nanoTime();
             }
         }
 
@@ -96,18 +103,26 @@ public class CheckersClientDemo {
                         if (msg.startsWith("VALID_MOVE")){
                             CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
                             isCurrentPlayer = false;
+                            end = System.nanoTime();
+                            currentPlayerElapsedTime += end - start;
                         } else if (msg.startsWith("INVALID_MOVE")) {
                             CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
                             CheckersDemoApp.updateLabel(msg.substring("INVALID_MOVE:?:?: ".length()), msgLabel);
                         } else if (msg.startsWith("OPPONENT_MOVED")){
                             CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
                             isCurrentPlayer = true;
+                            start = System.nanoTime();
                         } else if(msg.startsWith("MESSAGE")) {
                             System.out.println(msg);
                             CheckersDemoApp.updateLabel(msg.substring("MESSAGE ".length()), msgLabel);
                         } else if(msg.startsWith("VICTORY") || msg.startsWith("DEFEAT")) {
                             System.out.println(msg);
                             isCurrentPlayer = false;
+                            currentPlayerElapsedTime += end - start;
+                            totalElapsedTime = (int) ((int) System.nanoTime() - gameStartTime);
+                            Platform.runLater(() -> ModalPopupWindow.display("Results",msg,
+                                    "Elapsed move time -> " + String.valueOf(currentPlayerElapsedTime ) + ":"
+                                            + "Total elapsed move time (both players) -> " + String.valueOf( totalElapsedTime )));
                             safeClose(socket);
                         }
                     } catch (Exception e){

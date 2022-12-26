@@ -1,0 +1,17 @@
+.root{
+    -fx-background-color: #112222;
+}
+
+.label{
+    -fx-font: 40 arial;
+    -fx-text-fill: #DDDDDD;
+    -fx-alignment: center;
+    -fx-padding: 10;
+}
+
+#messageLabel{
+    -fx-font: 75 arial;
+    -fx-text-fill: #FFEEFF;
+    -fx-alignment: center;
+    -fx-padding: 60;
+}

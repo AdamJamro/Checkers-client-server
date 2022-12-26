@@ -7,14 +7,13 @@ import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.effect.Effect;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Ellipse;
+import javafx.scene.media.AudioClip;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Objects;
 
 import static com.example.demo.CheckersDemo.Piece.REGULAR_PAWN;
 import static com.example.demo.CheckersDemo.PieceType.*;
@@ -32,8 +31,7 @@ public class CheckersDemoApp extends Application {
     private final Group pieceGroup = new Group();
 
     private final Label msgLabel = new Label("Hello Checkers");
-
-//  private AudioClip clip = null;
+    private static AudioClip captureClip, normalClip;
 
     // create root node for our demo app
     private Parent createContent() {
@@ -239,7 +237,6 @@ public class CheckersDemoApp extends Application {
         }
 
 
-
         System.out.println("updateBoard:debug");
         int finalOldX = oldX;
         int finalOldY = oldY;
@@ -257,13 +254,20 @@ public class CheckersDemoApp extends Application {
             board[finalNewX][finalNewY].setPiece(piece);
             board[finalOldX][finalOldY].setPiece(null);
 
+            AudioClip clip = clip("NORMAL");
+
             if ( commands[0].startsWith("KILL") ){
                 Piece otherPiece = board[finalKillX][finalKillY].getPiece();
 
                 board[finalKillX][finalKillY].setPiece(null); //update logic&view
                 pieceGroup.getChildren().remove(otherPiece); //update logic
+
+                clip = clip("CAPTURE");
             }
 
+            if(clip != null){
+                clip.play();
+            }
 
             if (piece.getGamemode() == REGULAR_PAWN){
                 if (
@@ -286,41 +290,54 @@ public class CheckersDemoApp extends Application {
 
         } );
         System.out.println("updateBoard:debug2");
-
+//        Platform.runLater(() -> ModalPopupWindow.display("abc","sample", "abcdetail:seconddetail"));
     }
 
     public static void updateLabel(String msg, Label msgLabel){
         Platform.runLater(() -> msgLabel.setText(msg));
     }
 
-//    private AudioClip clip(){
-//        if (clip == null) {
-//            String src = getClass().getResource("com/example/demo/CheckersDemo/capture.mp3").toString();
-//            System.out.println("src " + src);
-//            clip = new AudioClip(src);
-//        }
-//        return clip;
-//    }
+    private static AudioClip clip(String type){
+        //initialize
+        if (captureClip == null) {
+            captureClip = new AudioClip(Objects.requireNonNull(CheckersDemoApp.class.getResource("/music/capture.mp3")).toExternalForm());
+        }
+        if (normalClip == null) {
+            normalClip = new AudioClip(Objects.requireNonNull(CheckersDemoApp.class.getResource("/music/move-self.mp3")).toExternalForm());
+        }
+
+        //return
+        if (type.equalsIgnoreCase("CAPTURE")) {
+            return captureClip;
+        }
+        if (type.equalsIgnoreCase("NORMAL")){
+            return normalClip;
+        }
+        else {
+            throw new IllegalArgumentException("can only play 'capture' or 'normal' move-sounds");
+        }
+    }
+
     @Override
     public void init() {
         try {
             client = new CheckersClientDemo(new Socket("localhost", 4545));
             System.out.println("client connected with server");
+            System.out.println("calling listener thread...");
+            client.receiveMessageFromServer(board, pieceGroup, msgLabel);
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Unable to establish connection with server");
             System.exit(1);
         }
-
-        System.out.println("calling listener thread");
-        client.receiveMessageFromServer(board, pieceGroup, msgLabel);
     }
 
 
     @Override
     public void start(Stage primaryStage) {
         Scene scene = new Scene(createContent());
-        primaryStage.setTitle("CheckersApp");
+        primaryStage.setTitle("CheckersApp - DEMO");
+        primaryStage.setResizable(false);
         primaryStage.setScene(scene);
 
         System.out.println("debug:show()");
