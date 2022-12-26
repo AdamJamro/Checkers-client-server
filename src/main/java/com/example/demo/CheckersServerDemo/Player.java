@@ -108,7 +108,7 @@ public class Player implements Runnable {
             if (game.hasWinner()) {
                 output.println("VICTORY");
                 opponent.output.println("DEFEAT");
-            } else if (1==2 /*DRAW CONDITION*/) {
+            } else if (1==2) {
                 output.println("DRAW");
                 opponent.output.println("DRAW");
             }

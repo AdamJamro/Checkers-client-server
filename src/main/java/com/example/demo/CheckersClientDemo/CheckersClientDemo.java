@@ -66,12 +66,12 @@ public class CheckersClientDemo {
                 System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Waiting for opponent...
                 System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Opponent has joined...
                 isCurrentPlayer = true;
-                gameStartTime = System.nanoTime();
+                start = System.nanoTime(); // start counting move time for the first player
             } else {
                 playerRole = "black";
                 isCurrentPlayer = false;
-                gameStartTime = System.nanoTime();
             }
+            gameStartTime = System.nanoTime();
         }
 
     }
@@ -96,7 +96,6 @@ public class CheckersClientDemo {
                     throw new RuntimeException(e);
                 }
                 if (in.hasNextLine()){
-                    System.out.println("IM LISTENING!");
                     try {
                         String msg = in.nextLine();
                         System.out.println("just received: "+msg);
@@ -118,6 +117,7 @@ public class CheckersClientDemo {
                         } else if(msg.startsWith("VICTORY") || msg.startsWith("DEFEAT")) {
                             System.out.println(msg);
                             isCurrentPlayer = false;
+                            end = System.nanoTime();
                             currentPlayerElapsedTime += end - start;
                             totalElapsedTime = System.nanoTime() - gameStartTime;
                             Platform.runLater(() -> ModalPopupWindow.display("Results",msg,
