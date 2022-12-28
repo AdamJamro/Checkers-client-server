@@ -1,5 +1,7 @@
 package com.example.demo.CheckersServerDemo;
 
+import java.util.Objects;
+
 public abstract class Game {
 
     //reference to the Player which has to move next
@@ -45,7 +47,7 @@ public abstract class Game {
             Pawn pawn = (Pawn) board[x][y];
             if (tileAvailable(x - 1, y + pawn.getDir()))
                 return true;
-            else if (tileAvailable(x - 2, y + 2 * pawn.getDir()) && board[x - 1][y + pawn.getDir()].getColor() != pawn.getColor())
+            else if (tileAvailable(x - 2, y + 2 * pawn.getDir()) && board[x - 1][y + pawn.getDir()].getColor() != pawn.getColor()) //can throw nullpointerexception
                 return true;
 
             if (tileAvailable(x + 1, y + pawn.getDir()))
@@ -57,7 +59,7 @@ public abstract class Game {
             King king = (King) board[x][y];
             int i = x - 1;
             int j = y - 1;
-            while (onBoard(i,j)) {
+            while (onBoard(i,j)) { //cannot jump over multiple pawns nor same color pawns
                 if (board[i][j] == null)
                     return true;
                 i--;
@@ -169,5 +171,46 @@ public abstract class Game {
     public void setPawn(int x, int y, AbstractPawn abstractPawn) {
         if (onBoard(x,y))
             board[x][y] = abstractPawn;
+    }
+
+    public boolean hasToCapture(int x, int y) {
+        if (board[x][y] == null)
+            return false;
+
+        if (board[x][y] instanceof Pawn piece){
+            int dir = piece.getDir();
+
+            AbstractPawn capturedPiece;
+            if (
+                    (tileAvailable(x - 2, y + 2 * dir) && (capturedPiece = board[x - 1][y + dir]) != null)
+                || (tileAvailable(x + 2, y + 2 * dir) && (capturedPiece = board[x + 1][y + dir]) != null)
+            )
+                if (capturedPiece.getColor() != piece.getColor())
+                    return true;
+        }
+
+        if (board[x][y] instanceof King piece){
+            int step = 1;
+            int x1 = x + step, y1 = y + step;
+            for (int dirX = -1; dirX <= 1 ; dirX+=2 ){
+                for (int dirY = -1; dirY <= 1 ; dirY+=2 ) {
+
+                    while(tileAvailable(x1, y1)){
+                        step++;
+                        x1 = x + dirX * step;
+                        y1 = y + dirY * step;
+                    }
+                    if (onBoard(x1,y1)){
+                        x1 = x + dirX * step;
+                        y1 = y + dirY * step;
+                        if (tileAvailable(x1,y1))
+                            return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+
     }
 }

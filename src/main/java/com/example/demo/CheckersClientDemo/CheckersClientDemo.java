@@ -2,6 +2,7 @@ package com.example.demo.CheckersClientDemo;
 
 import com.example.demo.CheckersDemo.CheckersDemoApp;
 import com.example.demo.CheckersDemo.ModalPopupWindow;
+import com.example.demo.CheckersDemo.Piece;
 import com.example.demo.CheckersDemo.Tile;
 import com.example.demo.CheckersServerDemo.PlayerRole;
 import javafx.application.Platform;
@@ -9,6 +10,7 @@ import javafx.scene.Group;
 import javafx.scene.control.Label;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -33,7 +35,7 @@ public class CheckersClientDemo {
     private long totalElapsedTime = 0, currentPlayerElapsedTime = 0;
     private long gameStartTime, start, end;
 
-    public boolean isCurrentPlayer =true;
+    public boolean isCurrentPlayer = true;
 
     /**
      * The main thread of the client will listen for messages from the server. The
@@ -100,17 +102,41 @@ public class CheckersClientDemo {
                         String msg = in.nextLine();
                         System.out.println("just received: "+msg);
                         if (msg.startsWith("VALID_MOVE")){
+
+                            String[] commands = msg.split(":");
+                            System.out.println(Arrays.toString(commands));
+                            int x0 = Integer.parseInt(commands[2]);
+                            int y0 = Integer.parseInt(commands[3]);
+                            if (playerRole.equalsIgnoreCase("BLACK")){
+                                x0 = invertHorizontal(x0);
+                                y0 = invertVertical(y0);
+                            }
+
+                            if (msg.startsWith("VALID_MOVE_COMBO")) {
+
+                                CheckersDemoApp.setComboFlag(CheckersDemoApp.FLAGRAISED);
+                                board[x0][y0].getPiece().setComboMark(Piece.COMBO_ON);
+                            } else {
+
+                                CheckersDemoApp.setComboFlag(CheckersDemoApp.FLAGDOWN);
+                                board[x0][y0].getPiece().setComboMark(Piece.COMBO_OFF);
+
+                                isCurrentPlayer = false;
+                                end = System.nanoTime();
+                                currentPlayerElapsedTime += end - start;
+                            }
+
                             CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
-                            isCurrentPlayer = false;
-                            end = System.nanoTime();
-                            currentPlayerElapsedTime += end - start;
                         } else if (msg.startsWith("INVALID_MOVE")) {
                             CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
                             CheckersDemoApp.updateLabel(msg.substring("INVALID_MOVE:?:?: ".length()), msgLabel);
                         } else if (msg.startsWith("OPPONENT_MOVED")){
                             CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
-                            isCurrentPlayer = true;
-                            start = System.nanoTime();
+
+                            if (!msg.startsWith("OPPONENT_MOVED_COMBO")) {
+                                isCurrentPlayer = true;
+                                start = System.nanoTime();
+                            }
                         } else if(msg.startsWith("MESSAGE")) {
                             System.out.println(msg);
                             CheckersDemoApp.updateLabel(msg.substring("MESSAGE ".length()), msgLabel);

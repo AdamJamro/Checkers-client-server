@@ -95,12 +95,19 @@ public class Player implements Runnable {
     private void processMoveCommand(String type, int oldX, int oldY, int newX, int newY, int killX, int killY) {
         try {
             game.move(type, oldX, oldY, newX, newY, killX, killY, this);
-            output.println("VALID_MOVE"
+
+            String response = "VALID_MOVE", opponentResponse = "OPPONENT_MOVED";
+            if (type.equalsIgnoreCase("KILL") && game.hasToCapture(newX,newY)) {
+                response = response.concat("_COMBO");
+                opponentResponse = opponentResponse.concat("_COMBO");
+                game.currentPlayer = game.currentPlayer.getOpponent();
+            }
+            output.println(response
                     + ":" + type
                     + ":" + oldX + ":" + oldY
                     + ":" + newX + ":" + newY
                     + ":" + killX + ":" + killY);
-            opponent.output.println("OPPONENT_MOVED"
+            opponent.output.println(opponentResponse
                     + ":" + type
                     + ":" + oldX + ":" + oldY
                     + ":" + newX + ":" + newY
@@ -113,7 +120,7 @@ public class Player implements Runnable {
                 opponent.output.println("DRAW");
             }
         } catch (IllegalStateException e) {
-            output.println("INVALID_MOVE:"+oldX+":"+oldY+": " + e.getMessage());
+            output.println("INVALID_MOVE:(type):"+oldX+":"+oldY+": " + e.getMessage());
         }
     }
 }

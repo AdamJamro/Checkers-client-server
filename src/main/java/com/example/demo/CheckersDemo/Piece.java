@@ -15,7 +15,10 @@ public class Piece extends StackPane {
     private double oldX, oldY;
 
     public static final int REGULAR_PAWN = 0, KING_PAWN = 1;
+    public static final int COMBO_OFF = 0, COMBO_ON = 1;
     private int gamemode = REGULAR_PAWN;
+
+    private int comboMark = COMBO_OFF;
 
     public PieceType getType() {
         return type;
@@ -97,5 +100,16 @@ public class Piece extends StackPane {
 
     public void setGamemode(int gamemode) {
         this.gamemode = gamemode;
+    }
+
+    public boolean hasComboMark() {
+        return comboMark == COMBO_ON;
+    }
+
+    public boolean setComboMark(int code) {
+        if (code != COMBO_ON && code != COMBO_OFF)
+            return false;
+        comboMark = code;
+        return true;
     }
 }

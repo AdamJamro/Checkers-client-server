@@ -32,6 +32,13 @@ public class CheckersDemoApp extends Application {
 
     private final Label msgLabel = new Label("Hello Checkers");
     private static AudioClip captureClip, normalClip;
+    public static int FLAGDOWN = 0, FLAGRAISED = 1;
+
+    private static int comboFlag = FLAGDOWN;
+
+    public static void setComboFlag(int code) {
+        comboFlag = code;
+    }
 
     // create root node for our demo app
     private Parent createContent() {
@@ -68,7 +75,7 @@ public class CheckersDemoApp extends Application {
         return root;
     }
 
-    //process potential move request to server
+    //determine move type (+ sieve out most of illegal moves)
     private MoveResult tryMove(Piece piece, int newX, int newY) {
 
         System.out.println("trying to move piece to:  " + newX + ", " + newY);
@@ -80,19 +87,38 @@ public class CheckersDemoApp extends Application {
             return new MoveResult(MoveType.NONE);
         }
 
+        if (comboFlag == FLAGRAISED && !piece.hasComboMark()) {
+            System.out.println("debug: flag-raised detected");
+            return new MoveResult(MoveType.NONE);
+        }
+
         int x0 = toBoard(piece.getOldX());
         int y0 = toBoard(piece.getOldY());
         int deltaX = newX - x0;
         int deltaY = newY - y0;
 
-        if ((Math.abs(deltaX) == -deltaY && (deltaY) >= -2 && piece.getGamemode() == REGULAR_PAWN)
-            || (Math.abs(deltaX) == Math.abs(deltaY) && (deltaY) != 0 && piece.getGamemode() == Piece.KING_PAWN)) {
+        if (Math.abs(deltaX) == -deltaY && (deltaY) >= -2 && piece.getGamemode() == REGULAR_PAWN) {
+            int x1 = x0 + deltaX/2;
+            int y1 = y0 + deltaY/2;
+
+            Piece capturedPiece;
+            if ( deltaY == -2 && board[x1][y1].hasPiece()) {
+                if ((capturedPiece = board[x1][y1].getPiece()).getType() != piece.getType()){
+                    return new MoveResult(MoveType.KILL, capturedPiece);
+                }
+                return new MoveResult(MoveType.NONE);
+            }
+            if (deltaY == -1)
+                return new MoveResult(MoveType.NORMAL);
+        }
+
+        else if (Math.abs(deltaX) == Math.abs(deltaY) && (deltaY) != 0 && piece.getGamemode() == Piece.KING_PAWN) {
 
             int x1 = x0;
             int y1 = y0;
             int stepX = deltaX/Math.abs(deltaX);
             int stepY = deltaY/Math.abs(deltaY);
-            int hurdles = Math.abs(deltaY);
+//            int hurdles = Math.abs(deltaY);
 
             while (x1 != newX && y1 != newY){
                 x1 += stepX;
@@ -105,14 +131,8 @@ public class CheckersDemoApp extends Application {
                     }
                     return new MoveResult(MoveType.NONE);
                 }
-                hurdles -= 1;
+//                hurdles -= 1;
 
-            }
-
-            if (piece.getGamemode() == REGULAR_PAWN
-                && deltaY == -2
-                && hurdles == 0) {
-                return new MoveResult(MoveType.NONE);
             }
 
             return new MoveResult(MoveType.NORMAL);
@@ -214,6 +234,8 @@ public class CheckersDemoApp extends Application {
 
         int oldX = Integer.parseInt(commands[1]);
         int oldY = Integer.parseInt(commands[2]);
+        System.out.println("oldX=" + oldX);
+        System.out.println("oldY=" + oldY);
 
         if (cmd0.startsWith("INVALID_MOVE")){
             int finalOldX = oldX;
