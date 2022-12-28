@@ -8,7 +8,6 @@ public abstract class Game {
     final int boardWidth;
     final int boardHeight;
 
-    // grid n by m, null if empty, WHITE whilst being occupied by a white pawn, BLACK - black pawn
     protected Game(int boardWidth, int boardHeight) {
         this.boardWidth = boardWidth;
         this.boardHeight = boardHeight;
