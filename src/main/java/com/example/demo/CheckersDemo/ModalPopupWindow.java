@@ -28,13 +28,13 @@ public class ModalPopupWindow {
         messageLabel.setId("messageLabel");
 
         Button closeBtn = new Button("Ok");
-        closeBtn.setAlignment(Pos.CENTER);
-        closeBtn.setTranslateX(230);
-//        closeBtn.setTranslateY(100);
+        closeBtn.setScaleX(2);
+        closeBtn.setScaleY(2);
+        closeBtn.setTranslateY(20);
         closeBtn.setOnAction(e -> exit(0));
-//        closeBtn.setPadding(new Insets(16,26,16,26));
 
         VBox layout = new VBox(10);
+        layout.setAlignment(Pos.CENTER);
         layout.getChildren().add(messageLabel);
 
         for (String detail : details.split(":")){
@@ -43,7 +43,7 @@ public class ModalPopupWindow {
             layout.getChildren().add(tmpLabel);
         }
 
-        layout.getChildren().add(closeBtn);
+        layout.getChildren().addAll(closeBtn, new Label());
 
         Scene scene = new Scene(layout);
         String css = Objects.requireNonNull(ModalPopupWindow.class.getResource("/css/popup.css")).toExternalForm();
