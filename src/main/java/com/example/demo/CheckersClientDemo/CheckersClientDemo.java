@@ -4,7 +4,6 @@ import com.example.demo.CheckersDemo.CheckersDemoApp;
 import com.example.demo.CheckersDemo.ModalPopupWindow;
 import com.example.demo.CheckersDemo.Piece;
 import com.example.demo.CheckersDemo.Tile;
-import com.example.demo.CheckersServerDemo.PlayerRole;
 import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
@@ -113,12 +112,10 @@ public class CheckersClientDemo {
                             }
 
                             if (msg.startsWith("VALID_MOVE_COMBO")) {
-
-                                CheckersDemoApp.setComboFlag(CheckersDemoApp.FLAGRAISED);
+                                CheckersDemoApp.setComboFlag(CheckersDemoApp.FLAG_RAISED);
                                 board[x0][y0].getPiece().setComboMark(Piece.COMBO_ON);
                             } else {
-
-                                CheckersDemoApp.setComboFlag(CheckersDemoApp.FLAGDOWN);
+                                CheckersDemoApp.setComboFlag(CheckersDemoApp.FLAG_DOWN);
                                 board[x0][y0].getPiece().setComboMark(Piece.COMBO_OFF);
 
                                 isCurrentPlayer = false;
@@ -140,12 +137,12 @@ public class CheckersClientDemo {
                         } else if(msg.startsWith("MESSAGE")) {
                             System.out.println(msg);
                             CheckersDemoApp.updateLabel(msg.substring("MESSAGE ".length()), msgLabel);
-                        } else if(msg.startsWith("VICTORY") || msg.startsWith("DEFEAT")) {
+                        } else if(msg.startsWith("VICTORY") || msg.startsWith("DEFEAT") || msg.startsWith("DRAW")) {
                             System.out.println(msg);
                             isCurrentPlayer = false;
                             end = System.nanoTime();
                             currentPlayerElapsedTime += end - start;
-                            totalElapsedTime = System.nanoTime() - gameStartTime;
+                            totalElapsedTime = end - gameStartTime;
                             Platform.runLater(() -> ModalPopupWindow.display("Results",msg,
                                     "Elapsed move time -> " + String.valueOf(currentPlayerElapsedTime/1000000000.0) + "s:"
                                             + "Total elapsed move time (both players) -> " + String.valueOf( totalElapsedTime/1000000000.0 ) + "s"));

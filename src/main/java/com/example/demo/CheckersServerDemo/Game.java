@@ -137,7 +137,9 @@ public abstract class Game {
         } else if (newX >= boardWidth || newY >= boardHeight) {
             throw new IllegalStateException("Pawns cannot leave the board");
         } else if (board[oldX][oldY].getColor() != currentPlayer.playerColor) {
-            throw new IllegalStateException("Not your color");
+            throw new IllegalStateException("It isn't your piece");
+        } else if (hasToCapture() && !type.equalsIgnoreCase("KILL")) {
+            throw new IllegalStateException("You must capture first!");
         } else if (!canMove(oldX,oldY)) {
             throw new IllegalStateException("This piece has no available moves!");
         }
@@ -189,27 +191,46 @@ public abstract class Game {
         }
 
         if (board[x][y] instanceof King piece){
-            int step = 1;
-            int x1 = x + step, y1 = y + step;
-            for (int dirX = -1; dirX <= 1 ; dirX+=2 ){
-                for (int dirY = -1; dirY <= 1 ; dirY+=2 ) {
+            System.out.println("piece is a king");
+            int x1, y1;
+            for (int dirX : new int[]{-1, 1}){
+                for (int dirY : new int[]{-1, 1}) {
+                    System.out.println("dirX = "+dirX+" dirY = "+dirY);
+                    int step = 0;
 
-                    while(tileAvailable(x1, y1)){
+                    do{
+                        //take a step
                         step++;
                         x1 = x + dirX * step;
                         y1 = y + dirY * step;
-                    }
-                    if (onBoard(x1,y1)){
+
+                    } while(tileAvailable(x1, y1));
+                    if (onBoard(x1,y1) && board[x1][y1].getColor() != board[x][y].getColor()){
+
+                        //take last step
+                        step++;
                         x1 = x + dirX * step;
                         y1 = y + dirY * step;
+
                         if (tileAvailable(x1,y1))
                             return true;
                     }
                 }
             }
+            System.out.println("king doesnt have available captures");
         }
-
         return false;
+    }
 
+    public boolean hasToCapture(){
+        for (int x = 0 ; x < boardHeight ; x++) {
+            for (int y = 0 ; y < boardWidth ; y++) {
+                if (board[x][y] != null && board[x][y].getColor() == currentPlayer.playerColor) {
+                    if (hasToCapture(x,y))
+                        return true;
+                }
+            }
+        }
+        return false;
     }
 }

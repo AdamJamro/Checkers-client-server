@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Objects;
 
+import static com.example.demo.CheckersClientDemo.CheckersClientDemo.invertHorizontal;
+import static com.example.demo.CheckersClientDemo.CheckersClientDemo.invertVertical;
 import static com.example.demo.CheckersDemo.Piece.REGULAR_PAWN;
 import static com.example.demo.CheckersDemo.PieceType.*;
 
@@ -32,9 +34,9 @@ public class CheckersDemoApp extends Application {
 
     private final Label msgLabel = new Label("Hello Checkers");
     private static AudioClip captureClip, normalClip;
-    public static int FLAGDOWN = 0, FLAGRAISED = 1;
+    public static int FLAG_DOWN = 0, FLAG_RAISED = 1;
 
-    private static int comboFlag = FLAGDOWN;
+    private static int comboFlag = FLAG_DOWN;
 
     public static void setComboFlag(int code) {
         comboFlag = code;
@@ -87,7 +89,7 @@ public class CheckersDemoApp extends Application {
             return new MoveResult(MoveType.NONE);
         }
 
-        if (comboFlag == FLAGRAISED && !piece.hasComboMark()) {
+        if (comboFlag == FLAG_RAISED && !piece.hasComboMark()) {
             System.out.println("debug: flag-raised detected");
             return new MoveResult(MoveType.NONE);
         }
@@ -234,12 +236,12 @@ public class CheckersDemoApp extends Application {
 
         int oldX = Integer.parseInt(commands[1]);
         int oldY = Integer.parseInt(commands[2]);
-        System.out.println("oldX=" + oldX);
-        System.out.println("oldY=" + oldY);
 
         if (cmd0.startsWith("INVALID_MOVE")){
-            int finalOldX = oldX;
-            int finalOldY = oldY;
+            int finalOldX = playerRole.equalsIgnoreCase("WHITE")
+                    ? oldX : invertHorizontal(oldX);
+            int finalOldY = playerRole.equalsIgnoreCase("WHITE")
+                    ? oldY : invertVertical(oldY);
             Platform.runLater(() -> board[finalOldX][finalOldY].getPiece().abortMove());
             return;
         }
@@ -250,14 +252,13 @@ public class CheckersDemoApp extends Application {
         int killY = Integer.parseInt(commands[6]);
 
         if (playerRole.equalsIgnoreCase("BLACK")){
-            oldX = CheckersClientDemo.invertHorizontal(oldX);
-            oldY = CheckersClientDemo.invertVertical(oldY);
-            newX = CheckersClientDemo.invertHorizontal(newX);
-            newY = CheckersClientDemo.invertVertical(newY);
-            killX = CheckersClientDemo.invertHorizontal(killX);
-            killY = CheckersClientDemo.invertVertical(killY);
+            oldX = invertHorizontal(oldX);
+            oldY = invertVertical(oldY);
+            newX = invertHorizontal(newX);
+            newY = invertVertical(newY);
+            killX = invertHorizontal(killX);
+            killY = invertVertical(killY);
         }
-
 
         System.out.println("updateBoard:debug");
         int finalOldX = oldX;
