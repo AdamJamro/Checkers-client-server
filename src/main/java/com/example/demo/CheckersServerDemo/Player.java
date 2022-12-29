@@ -119,7 +119,7 @@ public class Player implements Runnable {
             if (game.hasWinner()) {
                 output.println("VICTORY");
                 opponent.output.println("DEFEAT");
-            } else if (game.noMovesPossible(PawnColor.WHITE) && game.noMovesPossible(PawnColor.BLACK)) {
+            } else if (1==2) {
                 output.println("DRAW");
                 opponent.output.println("DRAW");
             }
