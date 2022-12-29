@@ -94,10 +94,14 @@ public class Player implements Runnable {
 
     private void processMoveCommand(String type, int oldX, int oldY, int newX, int newY, int killX, int killY) {
         try {
+            String movedPieceType = game.board[oldX][oldY].toString();
+//            System.out.println("mpTYPE: (before move)"+movedPieceType);
             game.move(type, oldX, oldY, newX, newY, killX, killY, this);
+//            System.out.println("mpTYPE (after move): "+game.board[newX][newY].toString());
 
             String response = "VALID_MOVE", opponentResponse = "OPPONENT_MOVED";
-            if (type.equalsIgnoreCase("KILL") && game.hasToCapture(newX,newY)) {
+            if (type.equalsIgnoreCase("KILL") && game.hasToCapture(newX,newY)
+                && game.board[newX][newY].toString().equals(movedPieceType)) {
                 response = response.concat("_COMBO");
                 opponentResponse = opponentResponse.concat("_COMBO");
                 game.currentPlayer = game.currentPlayer.getOpponent();
@@ -115,7 +119,7 @@ public class Player implements Runnable {
             if (game.hasWinner()) {
                 output.println("VICTORY");
                 opponent.output.println("DEFEAT");
-            } else if (1==2) {
+            } else if (game.noMovesPossible(PawnColor.WHITE) && game.noMovesPossible(PawnColor.BLACK)) {
                 output.println("DRAW");
                 opponent.output.println("DRAW");
             }

@@ -1,6 +1,5 @@
 package com.example.demo.CheckersServerDemo;
 
-import java.util.Objects;
 
 public abstract class Game {
 
@@ -138,7 +137,7 @@ public abstract class Game {
             throw new IllegalStateException("Pawns cannot leave the board");
         } else if (board[oldX][oldY].getColor() != currentPlayer.playerColor) {
             throw new IllegalStateException("It isn't your piece");
-        } else if (hasToCapture() && !type.equalsIgnoreCase("KILL")) {
+        } else if (hasToCapture(currentPlayer) && !type.equalsIgnoreCase("KILL")) {
             throw new IllegalStateException("You must capture first!");
         } else if (!canMove(oldX,oldY)) {
             throw new IllegalStateException("This piece has no available moves!");
@@ -190,12 +189,10 @@ public abstract class Game {
                     return true;
         }
 
-        if (board[x][y] instanceof King piece){
-            System.out.println("piece is a king");
+        if (board[x][y] instanceof King /*piece*/){
             int x1, y1;
             for (int dirX : new int[]{-1, 1}){
                 for (int dirY : new int[]{-1, 1}) {
-                    System.out.println("dirX = "+dirX+" dirY = "+dirY);
                     int step = 0;
 
                     do{
@@ -217,15 +214,15 @@ public abstract class Game {
                     }
                 }
             }
-            System.out.println("king doesnt have available captures");
+//            System.out.println("king does not must capture");
         }
         return false;
     }
 
-    public boolean hasToCapture(){
+    public boolean hasToCapture(Player player){
         for (int x = 0 ; x < boardHeight ; x++) {
             for (int y = 0 ; y < boardWidth ; y++) {
-                if (board[x][y] != null && board[x][y].getColor() == currentPlayer.playerColor) {
+                if (board[x][y] != null && board[x][y].getColor() == player.playerColor) {
                     if (hasToCapture(x,y))
                         return true;
                 }
