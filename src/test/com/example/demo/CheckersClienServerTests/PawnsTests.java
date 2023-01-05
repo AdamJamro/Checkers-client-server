@@ -1,10 +1,10 @@
 package com.example.demo.CheckersClienServerTests;
 import com.example.demo.CheckersClientDemo.CheckersClientDemo;
-import com.example.demo.CheckersServerDemo.CheckersServerDemo;
+import com.example.demo.CheckersServerDemo.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class Tests1 {
+public class PawnsTests {
     ClassicCheckers classicCheckers = new ClassicCheckers();
     PolishCheckers polishCheckers = new PolishCheckers();
 

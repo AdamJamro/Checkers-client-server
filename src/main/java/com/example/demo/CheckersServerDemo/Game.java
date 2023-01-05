@@ -18,7 +18,7 @@ public abstract class Game {
 
     public abstract void generateBoard();
 
-    private void showBoard() {
+    public void showBoard() {
         for (int y = 0; y < boardHeight; y++) {
             for (int x = 0; x < boardWidth; x++) {
                 if (board[x][y] != null) {

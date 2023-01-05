@@ -13,7 +13,7 @@ public class CheckersServerDemo {
         this.serverSocket = serverSocket;
     }
 
-    public void ServerBoot() {
+    public void serverBoot() {
         System.out.println("Server is running... listening on port " + serverSocket.getLocalPort());
         int ClientIndex = 1;
 
@@ -46,7 +46,7 @@ public class CheckersServerDemo {
     public static void main(String[] args) {
         try {
             var listener = new ServerSocket(4545);
-            new CheckersServerDemo(listener).ServerBoot();
+            new CheckersServerDemo(listener).serverBoot();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -90,7 +90,7 @@ public class CheckersDemoApp extends Application {
         }
 
         if (comboFlag == FLAG_RAISED && !piece.hasComboMark()) {
-            System.out.println("debug: flag-raised detected");
+            System.out.println("debug: combo-flag-raised detected");
             return new MoveResult(MoveType.NONE);
         }
 
@@ -292,7 +292,7 @@ public class CheckersDemoApp extends Application {
                 clip.play();
             }
 
-            if (piece.getGamemode() == REGULAR_PAWN){
+            if (piece.getGamemode() == REGULAR_PAWN /*&& !piece.hasToCapture*/){
                 if (
                         (
                                 ((finalNewY + 1) == HEIGHT)

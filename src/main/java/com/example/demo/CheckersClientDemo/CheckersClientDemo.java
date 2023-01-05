@@ -25,9 +25,9 @@ import java.net.Socket;
  */
 public class CheckersClientDemo {
 
-    private final Socket socket;
-    public final Scanner in;
-    public final PrintWriter out;
+    private Socket socket;
+    public Scanner in;
+    public PrintWriter out;
 
     private String playerRole;
 
@@ -52,6 +52,8 @@ public class CheckersClientDemo {
         this.out = new PrintWriter(socket.getOutputStream(), true);
         handShake();
     }
+
+    public CheckersClientDemo(){}
 
     private void handShake(){
 
@@ -144,8 +146,8 @@ public class CheckersClientDemo {
                             currentPlayerElapsedTime += end - start;
                             totalElapsedTime = end - gameStartTime;
                             Platform.runLater(() -> ModalPopupWindow.display("Results",msg,
-                                    "Elapsed move time -> " + String.valueOf(currentPlayerElapsedTime/1000000000.0) + "s:"
-                                            + "Total elapsed move time (both players) -> " + String.valueOf( totalElapsedTime/1000000000.0 ) + "s"));
+                                    "Elapsed move time -> " + String.format("%.1f",currentPlayerElapsedTime / 1_000_000_000.0) + "s:"
+                                            + "Total elapsed move time (both players) -> " + String.format("%.1f",totalElapsedTime / 1_000_000_000.0) + "s"));
                             safeClose(socket);
                         }
                     } catch (Exception e){
@@ -185,4 +187,6 @@ public class CheckersClientDemo {
     public String getPlayerRole(){
         return this.playerRole;
     }
+
+    public void setPlayerRole(String playerRole) { this.playerRole = playerRole; }
 }

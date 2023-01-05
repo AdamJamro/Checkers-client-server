@@ -2,7 +2,7 @@ package com.example.demo.CheckersServerDemo;
 
 public class PolishCheckers extends Game {
 
-    protected PolishCheckers() {
+    public PolishCheckers() {
         super(10, 10);
     }
 
