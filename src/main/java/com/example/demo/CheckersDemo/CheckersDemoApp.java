@@ -103,6 +103,8 @@ public class CheckersDemoApp extends Application {
 
         int x0 = toBoard(piece.getOldX()), y0 = toBoard(piece.getOldY());
         int deltaX = newX - x0, deltaY = newY - y0;
+        if (deltaX == 0 || deltaY == 0)
+            return new MoveResult(MoveType.NONE);
         int stepX = deltaX/Math.abs(deltaX), stepY = deltaY/Math.abs(deltaY);
         int killX, killY; //we don't know whether it is a capture move, until, board at this coordinate could be null
 

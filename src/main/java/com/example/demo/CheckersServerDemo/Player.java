@@ -123,7 +123,8 @@ public class Player implements Runnable {
             String response = "VALID_MOVE", opponentResponse = "OPPONENT_MOVED";
             if (type.equalsIgnoreCase("KILL")
                     && game.hasToCapture(newX,newY)
-                    && game.board[newX][newY].toString().equals(movedPieceType)) {
+                    && game.board[newX][newY].toString().equals(movedPieceType) //if we switched from pawn to king then stop
+            ) {
                 response = response.concat("_COMBO");
                 opponentResponse = opponentResponse.concat("_COMBO");
 

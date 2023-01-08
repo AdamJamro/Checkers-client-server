@@ -117,16 +117,25 @@ public abstract class Game {
 
         throwExceptionWhenLogicBroken(type, oldX, oldY, newX, newY, killX, killY, player);
 
+
         AbstractPawn pawnToMove = board[oldX][oldY];
         board[oldX][oldY] = null;
         board[newX][newY] = pawnToMove;
 
         if (type.equalsIgnoreCase("KILL")) {
+            //update logic
             board[killX][killY] = null;
 
-            makeKingIfCond(newX, newY);
+            if (hasToCapture(newX,newY)){
+                pawnToMove.setComboMark(Pawn.COMBO_ON);
+            } else {
+                pawnToMove.setComboMark(Pawn.COMBO_OFF);
+            }
         }
 
+        makeKingIfCond(newX, newY);
+
+        System.out.println("debug:move:pieceToMove.hasComboMark()=="+board[newX][newY].hasComboMark());
         currentPlayer = currentPlayer.getOpponent();
     }
 
@@ -150,7 +159,7 @@ public abstract class Game {
             throw new IllegalStateException("illegal move!");
         if (hasToCapture(currentPlayer) && !type.equalsIgnoreCase("KILL"))
             throw new IllegalStateException("You must capture first!");
-        if (assessMove(type, oldX, oldY, newX, newY) < bestMoveValue(currentPlayer))
+        if (!board[oldX][oldY].hasComboMark() && assessMove(type, oldX, oldY, newX, newY) < bestMoveValue(currentPlayer))
             throw new IllegalStateException("Unluckily 4 u, every player must play their best move!");
         System.gc();
     }
@@ -176,12 +185,12 @@ public abstract class Game {
         if (!(board[x][y] instanceof Pawn))
             return;
 
-        if (hasToCapture(x,y))
+        if (board[x][y].hasComboMark())
             return;
 
         if (((board[x][y].getColor() == PawnColor.WHITE && y == 0) || (board[x][y].getColor() == PawnColor.BLACK && y == boardHeight - 1)))  {
             board[x][y] = new King(board[x][y].getColor());
-            //System.out.println("mamy damke!");
+            System.out.println("mamy damke!");
         }
     }
 
@@ -218,13 +227,17 @@ public abstract class Game {
             }
         }
 
-        if (board[x][y] instanceof King /*piece*/){
+        if (board[x][y] instanceof King piece){
+
+            System.out.println("\ndebug:1:checking if king piece has to capture");
+
             int x1, y1;
             int[] directions = new int[]{-1, 1};
             for (int dirX : directions){
                 for (int dirY : directions) {
                     int step = 0;
 
+                    System.out.println("debug:2:checking if king piece has to capture");
                     do{
                         //take a step
                         step++;
@@ -235,22 +248,29 @@ public abstract class Game {
                     //board[x1][y1] is the first hurdle encountered
                     //...or end of board!
 
-                    if (!onBoard(x1,y1))
-                        return false;
+                    System.out.println("debug:3:checking if king piece has to capture:x1="+x1+":y1"+y1);
+                    if (!onBoard(x1,y1)) {
+                        continue;
+                    }
+                    System.out.println("debug:4:checking if king piece has to capture");
 
-                    if (board[x1][y1].getColor().getOpposite() == board[x][y].getColor()){
+                    if (board[x1][y1].getColor().getOpposite() == piece.getColor()){
 
                         //take last step (to pass the hurdle)
                         step++;
                         x1 = x + dirX * step;
                         y1 = y + dirY * step;
 
-                        if (!tileAvailable(x1,y1))
+                        System.out.println("debug:5:checking if king piece has to capture");
+                        if (tileAvailable(x1,y1)) {
+                            System.out.println("debug:6:checking if king piece has to capture");
                             return true;
+                        }
+                        System.out.println("debug:7:checking if king piece has to capture");
                     }
                 }
             }
-//            System.out.println("king does not must capture");
+//            System.out.println("king does not need to capture");
         }
         return false;
     }
@@ -269,6 +289,10 @@ public abstract class Game {
 
     private boolean isValidMove(String type, int oldX, int oldY, int newX, int newY, AbstractPawn pieceToMove){
         final int deltaX = newX - oldX, deltaY = newY - oldY;
+
+        if (deltaX == 0 || deltaY == 0)
+            return false;
+
         final int dx = deltaX/Math.abs(deltaX), dy = deltaY/Math.abs(deltaY);
         final int killX = newX - dx, killY = newY - dy;
         return isValidMove(type, oldX, oldY, newX, newY, killX, killY, pieceToMove);
@@ -280,13 +304,16 @@ public abstract class Game {
 
     private boolean isValidMove(String type, int oldX, int oldY, int newX, int newY, int killX, int killY, AbstractPawn pieceToMove){
         final int deltaX = newX - oldX, deltaY = newY - oldY;
+
+        if (deltaX == 0 || deltaY == 0)
+            return false;
+
         final int dx = deltaX/Math.abs(deltaX), dy = deltaY/Math.abs(deltaY);
         int numOfHurdles = 0, tmpX = oldX + dx, tmpY = oldY + dy;
 
 
         if(!tileAvailable(newX,newY))
             return false;
-
         if(board[newX][newY] != null)
             return false;
         if(Math.abs(deltaX) != Math.abs(deltaY))
@@ -326,8 +353,12 @@ public abstract class Game {
         if(pieceToMove instanceof Pawn piece){
 
             if(type.equalsIgnoreCase("NORMAL")){
-                //checks both if dy is non-0 and if directory is incorrect
-                if(dy * piece.getDir() <= 0)
+//                //checks both if dy is non-0 and if directory is incorrect
+//                if(dy * piece.getDir() <= 0)
+//                    return false;
+
+                //checks if direction and distance is correct (abs(distance) == 1)
+                if(deltaY * piece.getDir() != 1)
                     return false;
             }
 
@@ -338,9 +369,11 @@ public abstract class Game {
             }
         }
 
-        //archetype for different game-types
+        //we don't restrict king moves more
+        //(but there exist some types of rules that do)
+        //so it poses an archetype for different game-types
         if(pieceToMove instanceof King piece){
-            throw new IllegalStateException("NOT IMPLEMENTED YET!");
+            //pass
         }
 
         return true;
@@ -350,25 +383,40 @@ public abstract class Game {
 
     private int assessAvailableMoves(int x, int y) {
         int maxMoveValue = 0;
-        int tmpMoveValue = 0;
+        int[] dirX, dirY, allDirs = new int[]{-1, 1};
+
         if(hasToCapture(x,y)) {
 
-            if (board[x][y] instanceof Pawn piece) {
+//            dirX = board[x][y].getKillingDirX();
+//            dirY = board[x][y].getKillingDirY();
+            dirX = allDirs;
+            dirY = allDirs;
 
-                for (int i : new int[]{-1, 1}) {
-                    for (int j : new int[]{-1, 1}) {
-                        int oldX = x, oldY = y, newX = x + i * 2, newY = y + j * 2, killX = x + i, killY = y + j;
+            for (int i : dirX) {
+                for (int j : dirY) {
+                    int tmpMoveValue = 0;
+                    int oldX = x, oldY = y, newX = x + i * 2, newY = y + j * 2, killX = x + i, killY = y + j;
 
-                        if (isValidMove("KILL", oldX, oldY, newX, newY, killX, killY, piece))
-                            tmpMoveValue = assessMove("KILL", oldX, oldY, newX, newY);
+                    if(board[x][y] instanceof King){
+                        int step = 1;
+                        int tmpX = x + i, tmpY = y + j;
+                        while (tileAvailable(tmpX,tmpY)){
+                            step++;
+                            tmpX = x + step * i;
+                            tmpY = y * step * j;
+                        }
+                        killX = tmpX;
+                        killY = tmpY;
+                        step++;
+                        newX = x + step * i;
+                        newY = y * step * j;
+                    }
+
+                    if (isValidMove("KILL", oldX, oldY, newX, newY, killX, killY, board[x][y]))
+                        tmpMoveValue = assessMove("KILL", oldX, oldY, newX, newY);
 
                     maxMoveValue = Math.max(maxMoveValue, tmpMoveValue);
-                    }
                 }
-            }
-
-            if (board[x][y] instanceof King piece){
-                throw new IllegalStateException("NOT IMPLEMENTED YET");
             }
         }
         return maxMoveValue;
@@ -390,7 +438,6 @@ public abstract class Game {
     // are already covered in a branch's path (supposedly already captured prior in a particular path)
     // if an element is null it is free to be used - we do not skip, if it is a string - we do to skip it.
     private int assessMove(String type, int oldX, int oldY, int newX, int newY, String[][] usedBoard, AbstractPawn pieceToMove) {
-        //throw new IllegalStateException("NOT IMPLEMENTED YET");
         final int deltaX = newX - oldX, deltaY = newY - oldY;
         final int dx = deltaX/Math.abs(deltaX), dy = deltaY/Math.abs(deltaY);
         final int killX = newX - dx, killY = newY - dy;
@@ -402,27 +449,36 @@ public abstract class Game {
 
         int moveValue = 0;
 
-        if (type.equalsIgnoreCase("NORMAL")) {
-            return 0;
-        }
+//        if (type.equalsIgnoreCase("NORMAL")) {
+//            return 0;
+//        }
 
         //if it is a capture check every possible combo-capture by another four assesMove() calls (for each direction)
         //choose best of the recurring branches and make moveValue be their total sum
         if (type.equalsIgnoreCase("KILL")) {
 
+
+            int[] dirX, dirY, allDirs = new int[]{-1, 1};
+
+            moveValue ++;
+
+            //bonus for capturing a king
+            if (board[killX][killY] instanceof King){
+                moveValue ++;
+            }
+            int[][] tmpMoveValue = new int[][]{{moveValue, moveValue}, {moveValue, moveValue}};
+
+
+//                dirX = pieceToMove.getKillingDirX();
+//                dirY = pieceToMove.getKillingDirY();
+            dirX = allDirs;
+            dirY = allDirs;
+
             if(pieceToMove instanceof Pawn piece){
 
-                moveValue ++;
-
-                //bonus for capturing a king
-                if (board[killX][killY] instanceof King){
-                    moveValue ++;
-                }
-                int[][] tmpMoveValue = new int[][]{{moveValue, moveValue}, {moveValue, moveValue}};
-
                 //checks every of the four directions (i,j): (1,1),(-1,1),(1,-1),(-1,-1)
-                for (int i : new int[]{-1,1}){
-                    for (int j : new int[]{-1,1}){
+                for (int i : dirX){
+                    for (int j : dirY){
 
                         if (!tileAvailable(newX + i * 2, newY + j * 2)){
                             continue;
@@ -436,8 +492,40 @@ public abstract class Game {
                         }
                     }
                 }
+            }
 
-                //pick best move
+            if(pieceToMove instanceof King piece){
+
+                for(int i : dirX){
+                    for(int j : dirY){
+
+                        int step = 1;
+                        int tmpX = newX + i, tmpY = newY + j;
+                        while (tileAvailable(tmpX,tmpY)){
+                            step++;
+                            tmpX = newX + step * i;
+                            tmpY = newY + step * j;
+                        }
+                        int newKillX = tmpX;
+                        int newKillY = tmpY;
+                        step++;
+                        int newNewX = newX + step * i;
+                        int newNewY = newY + step * j;
+
+
+                        if (!tileAvailable(newNewX, newNewY)){
+                            continue;
+                        }
+                        if (usedBoard[newKillX][newKillY] != null){
+                            continue;
+                        }
+                        if(isValidMove(type, newX, newY, newNewX, newNewY, piece)) {
+                            tmpMoveValue[i==1?1:0][j==1?1:0] += assessMove(type, newX, newY,  newNewX, newNewY, usedBoard, piece);
+                        }
+                    }
+                }
+            }
+            //pick best move v1
 //                moveValue += Arrays.stream(new int[]{
 //                    tmpMoveValue[0][0],
 //                    tmpMoveValue[0][1],
@@ -445,21 +533,13 @@ public abstract class Game {
 //                    tmpMoveValue[1][1],
 //                }).max().getAsInt();
 
-                moveValue += Math.max(
-                        Math.max(tmpMoveValue[0][0],
-                        tmpMoveValue[0][1]),
-                        Math.max(tmpMoveValue[1][0],
-                        tmpMoveValue[1][1]));
-
-            }
-
-            if(pieceToMove instanceof King piece){
-                throw new IllegalStateException("NOT IMPLEMENTED YET!");
-            }
+            //pick best move v2
+            moveValue += Math.max(
+                    Math.max(tmpMoveValue[0][0],
+                            tmpMoveValue[0][1]),
+                    Math.max(tmpMoveValue[1][0],
+                            tmpMoveValue[1][1]));
         }
-
-
-
         return moveValue;
     }
 

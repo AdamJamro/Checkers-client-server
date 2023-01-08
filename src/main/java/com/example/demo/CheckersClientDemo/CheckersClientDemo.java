@@ -128,36 +128,39 @@ public class CheckersClientDemo {
                             CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
                             CheckersDemoApp.updateLabel(msg.substring("INVALID_MOVE:?:?: ".length()), msgLabel);
                         } else if (msg.startsWith("OPPONENT_MOVED")){
-                            CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
 
-                            if (!msg.startsWith("OPPONENT_MOVED_COMBO")) {
+                            String[] commands = msg.split(":");
+                            System.out.println(Arrays.toString(commands));
+                            int x0 = Integer.parseInt(commands[2]);
+                            int y0 = Integer.parseInt(commands[3]);
+                            if (playerRole.equalsIgnoreCase("BLACK")){
+                                x0 = invertHorizontal(x0);
+                                y0 = invertVertical(y0);
+                            }
+
+                            if (msg.startsWith("OPPONENT_MOVED_COMBO")) {
+                                board[x0][y0].getPiece().setComboMark(Piece.COMBO_ON);
+                            } else {
+                                board[x0][y0].getPiece().setComboMark(Piece.COMBO_OFF);
                                 isCurrentPlayer = true;
                                 start = System.nanoTime();
                             }
+
+                            CheckersDemoApp.updateBoard(msg, board, pieceGroup, playerRole);
                         } else if(msg.startsWith("MESSAGE")) {
                             System.out.println(msg);
                             CheckersDemoApp.updateLabel(msg.substring("MESSAGE ".length()), msgLabel);
-                        } else if(msg.startsWith("VICTORY") || msg.startsWith("DEFEAT") || msg.startsWith("DRAW")) {
+                        } else if(msg.startsWith("VICTORY") || msg.startsWith("DEFEAT") || msg.startsWith("DRAW") || msg.startsWith("OTHER_PLAYER_LEFT")) {
                             System.out.println(msg);
                             isCurrentPlayer = false;
                             end = System.nanoTime();
                             currentPlayerElapsedTime += end - start;
                             totalElapsedTime = end - gameStartTime;
-                            Platform.runLater(() -> ModalPopupWindow.display("Results",msg,
-                                    "Elapsed move time -> " + String.format("%.1f",currentPlayerElapsedTime / 1_000_000_000.0) + "s:"
+                            Platform.runLater(() -> ModalPopupWindow.display("Results",msg.replace("_"," "),
+                                    "Elapsed move time -> " + String.format("%.1f",currentPlayerElapsedTime / 1_000_000_000.0) + "s"
+                                            +":"
                                             + "Total elapsed move time (both players) -> " + String.format("%.1f",totalElapsedTime / 1_000_000_000.0) + "s"));
                             safeClose(socket);
-                        } else if (msg.startsWith("GAMETYPE")) {
-                            System.out.println(msg);
-//                            String type = msg.split(":")[1];
-//                            switch (type){
-//                                case "CLASSIC" :
-//                                    break;
-//                                case "RUSSIAN" :
-//                                    break;
-//                                case "POLISH" :
-//                                    break;
-//                            }
                         }
                     } catch (Exception e){
                         e.printStackTrace();
