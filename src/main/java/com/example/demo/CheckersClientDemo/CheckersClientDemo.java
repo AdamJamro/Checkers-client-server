@@ -14,15 +14,7 @@ import java.util.Scanner;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-/**
- * A client for a multi-player tic tac toe game. Loosely based on an example in
- * Deitel and Deitel’s “Java How to Program” book. For this project I created a
- * new application-level protocol called TTTP (for Tic Tac Toe Protocol), which
- * is entirely plain text. The messages of TTTP are:
- * Client -> Server MOVE <n> QUIT
- * Server -> Client WELCOME <char> VALID_MOVE OTHER_PLAYER_MOVED <n>
- * OTHER_PLAYER_LEFT VICTORY DEFEAT TIE MESSAGE <text>
- */
+
 public class CheckersClientDemo {
 
     private Socket socket;
@@ -31,20 +23,11 @@ public class CheckersClientDemo {
 
     private String playerRole;
 
+    public final String[] gameTypes = new String[]{"Classic", "Russian", "Polish"};
     private long totalElapsedTime = 0, currentPlayerElapsedTime = 0;
     private long gameStartTime, start, end;
 
     public boolean isCurrentPlayer = true;
-
-    /**
-     * The main thread of the client will listen for messages from the server. The
-     * first message will be a "WELCOME" message in which we receive our mark. Then
-     * we go into a loop listening for any of the other messages, and handling each
-     * message appropriately. The "VICTORY", "DEFEAT", "DRAW", and
-     * "OTHER_PLAYER_LEFT" messages will ask the user whether or not to play another
-     * game. If the answer is no, the loop is exited and the server is sent a "QUIT"
-     * message.
-     */
 
     public CheckersClientDemo(Socket socket) throws IOException{
         this.socket = socket;
@@ -58,24 +41,39 @@ public class CheckersClientDemo {
     private void handShake(){
 
         System.out.println("debug1");
-        if (in.hasNextLine()){
+//        if (in.hasNextLine()){
             System.out.println("debug2");
             var response = in.nextLine();
             var side = response.substring(8);
+            String gameType = null;
             System.out.println("HANDSHAKE: " + side);
             if(side.equalsIgnoreCase("white")){ //WHITE
                 playerRole = "white";
-                isCurrentPlayer = false;
+                isCurrentPlayer = false; //will be set true at the end of this block
+
                 System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Waiting for opponent...
                 System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Opponent has joined...
+                System.out.println("Choose game type");
+                do{
+                    gameType = new Scanner(System.in).nextLine();
+                } while (Arrays.stream(gameTypes).noneMatch(gameType::equalsIgnoreCase));
+                out.println(gameType.toUpperCase());
+                System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE chosen game type is <?>
+
                 isCurrentPlayer = true;
                 start = System.nanoTime(); // start counting move time for the first player
             } else {
                 playerRole = "black";
                 isCurrentPlayer = false;
+
+                gameType = in.nextLine();
+                out.println(gameType); //notify my player-thread worker
+                System.out.println("HANDSHAKE: " + gameType); //<?>
             }
-            gameStartTime = System.nanoTime();
-        }
+        //since this app only partially handles logic only few board size needs to be changed, which is handled below
+        CheckersDemoApp.updateGameType(gameType);
+        gameStartTime = System.nanoTime(); //begin game clock (will be displayed at the end screen)
+//        }
 
     }
 
@@ -149,6 +147,17 @@ public class CheckersClientDemo {
                                     "Elapsed move time -> " + String.format("%.1f",currentPlayerElapsedTime / 1_000_000_000.0) + "s:"
                                             + "Total elapsed move time (both players) -> " + String.format("%.1f",totalElapsedTime / 1_000_000_000.0) + "s"));
                             safeClose(socket);
+                        } else if (msg.startsWith("GAMETYPE")) {
+                            System.out.println(msg);
+//                            String type = msg.split(":")[1];
+//                            switch (type){
+//                                case "CLASSIC" :
+//                                    break;
+//                                case "RUSSIAN" :
+//                                    break;
+//                                case "POLISH" :
+//                                    break;
+//                            }
                         }
                     } catch (Exception e){
                         e.printStackTrace();
