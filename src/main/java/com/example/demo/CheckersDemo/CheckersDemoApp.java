@@ -1,6 +1,7 @@
 package com.example.demo.CheckersDemo;
 
 import com.example.demo.CheckersClientDemo.CheckersClientDemo;
+import com.example.demo.CheckersServerDemo.AbstractPawn;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Group;
@@ -23,11 +24,12 @@ import static com.example.demo.CheckersDemo.PieceType.*;
 public class CheckersDemoApp extends Application {
 
     private static CheckersClientDemo client;
-    public static final int TILE_SIZE = 100;
-    public static final int WIDTH = 8;
-    public static final int HEIGHT = 8;
+    public static int TILE_SIZE = 100;
+    public static int WIDTH = 8;
+    public static int HEIGHT = 8;
 
-    private final Tile[][] board = new Tile[WIDTH][HEIGHT];
+    public static int numOfRowsOccupied = 0;
+    private Tile[][] board;
 
     private final Group tileGroup = new Group();
     private final Group pieceGroup = new Group();
@@ -49,6 +51,10 @@ public class CheckersDemoApp extends Application {
         root.getChildren().addAll(tileGroup, pieceGroup, msgLabel);
         msgLabel.setVisible(true);
 
+        if (numOfRowsOccupied == 0){
+            numOfRowsOccupied = HEIGHT / 2 - 1;
+        }
+
         // fill out the board with pieces and tiles on their spots
         for (int y = 0; y < HEIGHT; y++) {
             for (int x = 0; x < WIDTH; x++) {
@@ -59,11 +65,11 @@ public class CheckersDemoApp extends Application {
 
                 Piece piece = null;
 
-                if (y <= 2 && (x + y) % 2 != 0) {
+                if (y < numOfRowsOccupied && (x + y) % 2 != 0) {
                     piece = makePiece(client.getPlayerRole().equalsIgnoreCase("WHITE")? BLACK : WHITE, x, y);
                 }
 
-                if (y >= WIDTH - 3 && (x + y) % 2 != 0) {
+                if (y >= WIDTH - numOfRowsOccupied && (x + y) % 2 != 0) {
                     piece = makePiece(client.getPlayerRole().equalsIgnoreCase("WHITE")? WHITE : BLACK, x, y);
                 }
 
@@ -80,56 +86,74 @@ public class CheckersDemoApp extends Application {
     //determine move type (+ sieve out most of illegal moves)
     private MoveResult tryMove(Piece piece, int newX, int newY) {
 
-        System.out.println("trying to move piece to:  " + newX + ", " + newY);
-        System.out.println("piece type: "+piece.getType().toString());
-        System.out.println("client role type: "+client.getPlayerRole());
+        System.out.println("\ndebug: trying to move piece to:  " + newX + ", " + newY);
+        System.out.println("debug: piece type: "+piece.getType().toString());
+        System.out.println("debug: client role type: "+client.getPlayerRole());
 
         if (board[newX][newY].hasPiece()
                 || (newX + newY) % 2 == 0) {
             return new MoveResult(MoveType.NONE);
         }
 
+
         if (comboFlag == FLAG_RAISED && !piece.hasComboMark()) {
             System.out.println("debug: combo-flag-raised detected");
             return new MoveResult(MoveType.NONE);
         }
 
-        int x0 = toBoard(piece.getOldX());
-        int y0 = toBoard(piece.getOldY());
-        int deltaX = newX - x0;
-        int deltaY = newY - y0;
+        int x0 = toBoard(piece.getOldX()), y0 = toBoard(piece.getOldY());
+        int deltaX = newX - x0, deltaY = newY - y0;
+        int stepX = deltaX/Math.abs(deltaX), stepY = deltaY/Math.abs(deltaY);
+        int killX, killY; //we don't know whether it is a capture move, until, board at this coordinate could be null
 
-        if (Math.abs(deltaX) == -deltaY && (deltaY) >= -2 && piece.getGamemode() == REGULAR_PAWN) {
-            int x1 = x0 + deltaX/2;
-            int y1 = y0 + deltaY/2;
-
-            Piece capturedPiece;
-            if ( deltaY == -2 && board[x1][y1].hasPiece()) {
-                if ((capturedPiece = board[x1][y1].getPiece()).getType() != piece.getType()){
-                    return new MoveResult(MoveType.KILL, capturedPiece);
-                }
-                return new MoveResult(MoveType.NONE);
-            }
-            if (deltaY == -1)
-                return new MoveResult(MoveType.NORMAL);
+        if (Math.abs(deltaX) != Math.abs(deltaY)){
+            return new MoveResult(MoveType.NONE);
         }
 
-        else if (Math.abs(deltaX) == Math.abs(deltaY) && (deltaY) != 0 && piece.getGamemode() == Piece.KING_PAWN) {
+        // at this point we're dealing with a valid cross-like move
+        // also we don't violate comboFlag
+        if (piece.getGamemode() == REGULAR_PAWN){
 
-            int x1 = x0;
-            int y1 = y0;
-            int stepX = deltaX/Math.abs(deltaX);
-            int stepY = deltaY/Math.abs(deltaY);
+            //Normal move can go only one tile "down" the board in a v-like shape
+            if(Math.abs(deltaX) == -deltaY && (deltaY) == -1){ //deltaY = -1, deltaX = 1, -1
+                return new MoveResult(MoveType.NORMAL);
+            }
+
+            //Kill move can go exactly two tiles in an x-like shape
+            if(Math.abs(deltaY) == 2){ //deltaY = 2, -2, deltaX = 2, -2
+
+//                killX = x0 + deltaX/2;
+//                killY = y0 + deltaY/2;
+                killX = newX - stepX;
+                killY = newY - stepY;
+
+                Piece capturedPiece;
+                if (board[killX][killY].hasPiece()) {
+
+                    if ((capturedPiece = board[killX][killY].getPiece()).getType() != piece.getType()){
+                        return new MoveResult(MoveType.KILL, capturedPiece);
+                    }
+//                    return new MoveResult(MoveType.NONE);
+                }
+            }
+
+        }
+
+        if (piece.getGamemode() == Piece.KING_PAWN
+                && (deltaY) != 0) {
+
+            killX = x0;
+            killY = y0;
 //            int hurdles = Math.abs(deltaY);
 
-            while (x1 != newX && y1 != newY){
-                x1 += stepX;
-                y1 += stepY;
-                if (board[x1][y1].hasPiece()) {
-                    if (board[x1][y1].getPiece().getType() != piece.getType()
-                            && x1+stepX == newX
-                            && y1+stepY == newY){
-                        return new MoveResult(MoveType.KILL, board[x1][y1].getPiece());
+            while (killX != newX && killY != newY){
+                killX += stepX;
+                killY += stepY;
+                if (board[killX][killY].hasPiece()) {
+                    if (board[killX][killY].getPiece().getType() != piece.getType()
+                            && killX+stepX == newX
+                            && killY+stepY == newY){
+                        return new MoveResult(MoveType.KILL, board[killX][killY].getPiece());
                     }
                     return new MoveResult(MoveType.NONE);
                 }
@@ -140,22 +164,10 @@ public class CheckersDemoApp extends Application {
             return new MoveResult(MoveType.NORMAL);
         }
 
-//        if (Math.abs(newX - x0) == 1 && (newY - y0) == piece.getType().moveDir ) {
-//            return new MoveResult(MoveType.NORMAL);
-//        } else if (Math.abs(newX - x0) == 2 && newY - y0 == piece.getType().moveDir * 2) {
-//
-//            int x1 = x0 + (newX - x0) / 2;
-//            int y1 = y0 + (newY - y0) / 2;
-//
-//            if (board[x1][y1].hasPiece() && board[x1][y1].getPiece().getType() != piece.getType()) {
-//                return new MoveResult(MoveType.KILL, board[x1][y1].getPiece());
-//            }
-//        }
-
         return new MoveResult(MoveType.NONE);
     }
 
-    private int toBoard(double pixel) {
+    private static int toBoard(double pixel) {
         return (int)(pixel + TILE_SIZE / 2) / TILE_SIZE;
     }
 
@@ -185,38 +197,13 @@ public class CheckersDemoApp extends Application {
 
             switch (result.getType()) {
                 case NONE -> piece.abortMove();
-                case NORMAL -> {
-                    client.pushCommand("NORMAL", x0, y0, newX, newY);
-//                    String response = client.in.nextLine();
-//                    System.out.println("received after pushCmd: " + response);
-//                    if (!response.equalsIgnoreCase("VALID_MOVE")) {
-//                        piece.abortMove();
-//                        return;
-//                    }
-
-//                    piece.move(newX, newY);
-//                    board[x0][y0].setPiece(null);
-//                    board[newX][newY].setPiece(piece);
-//                    client.isCurrentPlayer = false;
-
-//                  clip().play();
-                }
+                case NORMAL ->
+                        client.pushCommand("NORMAL", x0, y0, newX, newY);
                 case KILL -> {
                     Piece otherPiece = result.getPiece();
                     int killX = toBoard(otherPiece.getOldX());
                     int killY = toBoard(otherPiece.getOldY());
                     client.pushCommand("KILL", x0, y0, newX, newY, killX, killY);
-//                    System.out.println(client.in.nextLine());
-
-//                    piece.move(newX, newY);
-//                    board[x0][y0].setPiece(null);
-//                    board[newX][newY].setPiece(piece);
-
-//                  clip().play();
-
-//                    board[toBoard(otherPiece.getOldX())][toBoard(otherPiece.getOldY())].setPiece(null);
-//                    pieceGroup.getChildren().remove(otherPiece);
-//                    client.isCurrentPlayer = false;
                 }
             }
         });
@@ -277,7 +264,7 @@ public class CheckersDemoApp extends Application {
             board[finalNewX][finalNewY].setPiece(piece);
             board[finalOldX][finalOldY].setPiece(null);
 
-            AudioClip clip = clip("NORMAL");
+            AudioClip clip = clip("NORMAL"); //set clip to self-move.mp3
 
             if ( commands[0].startsWith("KILL") ){
                 Piece otherPiece = board[finalKillX][finalKillY].getPiece();
@@ -285,14 +272,14 @@ public class CheckersDemoApp extends Application {
                 board[finalKillX][finalKillY].setPiece(null); //update logic&view
                 pieceGroup.getChildren().remove(otherPiece); //update logic
 
-                clip = clip("CAPTURE");
+                clip = clip("CAPTURE"); //re-set clip to capture.mp3
             }
 
             if(clip != null){
                 clip.play();
             }
 
-            if (piece.getGamemode() == REGULAR_PAWN /*&& !piece.hasToCapture*/){
+            if (piece.getGamemode() == REGULAR_PAWN && !piece.hasComboMark()){
                 if (
                         (
                                 ((finalNewY + 1) == HEIGHT)
@@ -316,8 +303,58 @@ public class CheckersDemoApp extends Application {
 //        Platform.runLater(() -> ModalPopupWindow.display("abc","sample", "abcdetail:seconddetail"));
     }
 
+    //does not implement capture logic for king since it is unnecessary for this app purposes
+    private static boolean hasToCapture(Piece piece, Tile[][] board) {
+        if(piece == null)
+            return false;
+
+        if(piece.getGamemode() == Piece.KING_PAWN)
+            throw new IllegalArgumentException("don't call this method on a king piece");
+
+        int x = toBoard(piece.getOldX()), y = toBoard(piece.getOldY());
+
+        //search all possible directions
+        int[] directions = new int[]{-1,1};
+        for (int dirX : directions){
+            for (int dirY : directions){
+                int killX = x + dirX, killY = y + dirY;
+                int newX = x + dirX * 2, newY = y + dirY * 2;
+
+                if (newX < 0 || newX >= WIDTH || newY < 0 || newY >= HEIGHT)
+                    continue;
+                //if (newX,newY) is on board then (killX,killY) is on board
+//                if (killX < 0 || killX >= WIDTH || killY < 0 || killY >= HEIGHT)
+//                    continue;
+                if (!board[killX][killY].hasPiece())
+                    continue;
+                if (board[killX][killY].getPiece().getType() != piece.getType())
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
     public static void updateLabel(String msg, Label msgLabel){
         Platform.runLater(() -> msgLabel.setText(msg));
+    }
+
+    public static void updateGameType(String gameType) {
+        Platform.runLater(() -> {
+            switch (gameType) {
+                case "Classic":
+                    break;
+                case "Russian":
+                    break;
+                case "Polish": {
+                    WIDTH = 10;
+                    HEIGHT = 10;
+                    numOfRowsOccupied = 4;
+                }
+                default:
+                    break;
+            }
+        });
     }
 
     private static AudioClip clip(String type){
@@ -347,6 +384,7 @@ public class CheckersDemoApp extends Application {
             client = new CheckersClientDemo(new Socket("localhost", 4545));
             System.out.println("client connected with server");
             System.out.println("calling listener thread...");
+            this.board = new Tile[WIDTH][HEIGHT];
             client.receiveMessageFromServer(board, pieceGroup, msgLabel);
         } catch (IOException e) {
             e.printStackTrace();
@@ -358,12 +396,16 @@ public class CheckersDemoApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+
+//        new ModalGamePicker(client).showAndWait();
+
+
         Scene scene = new Scene(createContent());
         primaryStage.setTitle("CheckersApp - DEMO");
         primaryStage.setResizable(false);
         primaryStage.setScene(scene);
 
-        System.out.println("debug:show()");
+        System.out.println("debug:fx::show()");
         primaryStage.show();
     }
 

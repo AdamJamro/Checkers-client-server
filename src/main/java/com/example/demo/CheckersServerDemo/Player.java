@@ -6,7 +6,7 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Player implements Runnable {
-    private final Game game;
+    private Game game;
     private Player opponent;
     public PawnColor playerColor;
     public Socket socket;
@@ -14,10 +14,11 @@ public class Player implements Runnable {
     public PrintWriter output;
 
 
-    public Player(Socket socket, PawnColor playerColor, Game game) {
+    public Player(Socket socket, PawnColor playerColor) throws IOException  {
+        input = new Scanner(socket.getInputStream());
+        output = new PrintWriter(socket.getOutputStream(), true);
         this.socket = socket;
         this.playerColor = playerColor;
-        this.game = game;
     }
 
     public Player getOpponent(){
@@ -43,29 +44,49 @@ public class Player implements Runnable {
         }
     }
 
-    private void handShake() throws IOException {
-        input = new Scanner(socket.getInputStream());
-        output = new PrintWriter(socket.getOutputStream(), true);
+    private void handShake() {
+
 
 //      System.out.println("player" + this + "setup");
 
         output.println("WELCOME " + playerColor.side);
+        String chosenGameType;
         if (playerColor == PawnColor.WHITE) {
-            game.currentPlayer = this;
             output.println("MESSAGE Waiting for opponent to connect");
+
+            chosenGameType = input.nextLine();
+            output.println("MESSAGE chosen game type is " + chosenGameType);
+            this.game = buildGame(chosenGameType);
+
+            game.currentPlayer = this;
+
+            opponent.output.println(chosenGameType); //notify the opponent
         } else {
-            this.opponent = game.currentPlayer;
             this.opponent.opponent = this;
             opponent.output.println("MESSAGE Opponent has joined");
+            chosenGameType = input.nextLine(); //wait until game type was chosen
+            game = opponent.game;
         }
     }
+
+    private Game buildGame(String gameType) {
+        System.out.println("debug:gameType:"+gameType);
+        return switch (gameType) {
+            case "CLASSIC" -> new ClassicCheckers();
+            case "RUSSIAN" -> new RussianCheckers();
+            case "POLISH" -> new PolishCheckers();
+            default -> throw new IllegalArgumentException("invalid game type chosen!");
+        };
+    }
+
 
     private void processCommands() {
         while (input.hasNextLine()) {
             String command = input.nextLine();
             String[] params = command.split(":");
-            System.out.println(command);
+            System.out.println("player " + playerColor + " got: " + command);
             if (command.startsWith("QUIT")) {
+                opponent.output.println("Opponent has quit");
                 return;
             } else if (command.startsWith("NORMAL")) {
                 processMoveCommand(
@@ -100,11 +121,15 @@ public class Player implements Runnable {
 //            System.out.println("mpTYPE (after move): "+game.board[newX][newY].toString());
 
             String response = "VALID_MOVE", opponentResponse = "OPPONENT_MOVED";
-            if (type.equalsIgnoreCase("KILL") && game.hasToCapture(newX,newY)
-                && game.board[newX][newY].toString().equals(movedPieceType)) {
+            if (type.equalsIgnoreCase("KILL")
+                    && game.hasToCapture(newX,newY)
+                    && game.board[newX][newY].toString().equals(movedPieceType)) {
                 response = response.concat("_COMBO");
                 opponentResponse = opponentResponse.concat("_COMBO");
-                game.currentPlayer = game.currentPlayer.getOpponent(); //if game.move was called currentPlayer is the enemy, in order to give us our combo turn back we switch again
+
+                //if game.move(..) was called currentPlayer is the enemy,
+                //in order to give us our combo turn back we switch again
+                game.currentPlayer = game.currentPlayer.getOpponent();
             }
             output.println(response
                     + ":" + type
@@ -127,4 +152,9 @@ public class Player implements Runnable {
             output.println("INVALID_MOVE:(type):"+oldX+":"+oldY+": " + e.getMessage());
         }
     }
+
+    public void setOpponent(Player opponent) {
+        this.opponent = opponent;
+    }
+
 }

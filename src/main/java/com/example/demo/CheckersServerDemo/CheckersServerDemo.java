@@ -25,16 +25,24 @@ public class CheckersServerDemo {
                 Socket clientSocketA = serverSocket.accept();
                 System.out.println("Client no." + ClientIndex++ + " has connected");
 
-                Game game = new ClassicCheckers();
-                pool.execute(new Player(clientSocketA, PawnColor.WHITE, game));
+                Player playerA = new Player(clientSocketA, PawnColor.WHITE);
+//                Game game = buildGame(playerA.getIn());
+//                Game game = new ClassicCheckers();
+//                System.out.println("server has succeeded a game build");
+//                playerA.setGame(game);
+                pool.execute(playerA);
 
-                if (!clientSocketA.isConnected () || game == null) {
+                if (!clientSocketA.isConnected()){
                     continue;
                 }
 
                 Socket clientSocketB = serverSocket.accept();
                 System.out.println("Client no." + ClientIndex++ + " has connected");
-                pool.execute(new Player(clientSocketB, PawnColor.BLACK, game));
+                Player playerB = new Player(clientSocketB, PawnColor.BLACK);
+                playerB.setOpponent(playerA);
+//                playerB.setGame(game);
+                pool.execute(playerB);
+
 
             }
         } catch (IOException e) {
@@ -42,6 +50,7 @@ public class CheckersServerDemo {
         }
 
     }
+
 
     public static void main(String[] args) {
         try {
@@ -66,5 +75,4 @@ public class CheckersServerDemo {
         if (socket != null)
             socket.close();
     }
-
 }
