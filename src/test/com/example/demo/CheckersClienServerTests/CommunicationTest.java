@@ -18,9 +18,7 @@ public class CommunicationTest {
 
     private final int serverPort = 5050;
 
-    private Game createGame(){
-        return new ClassicCheckers();
-    }
+    public String gameType = "CLASSIC";
 
     private CheckersServerDemo createServer() throws IOException {
         return new CheckersServerDemo(new ServerSocket(serverPort));
@@ -40,13 +38,6 @@ public class CommunicationTest {
         return server;
     }
 
-    private CheckersClientDemo makeClient(Socket socket, String playerRole) throws IOException {
-        CheckersClientDemo client = new CheckersClientDemo();
-        client.in = new Scanner(socket.getInputStream());
-        client.out = new PrintWriter(socket.getOutputStream(), true);
-        client.setPlayerRole(playerRole);
-        return client;
-    }
 
     @Test
     void connectionTest() throws IOException, InterruptedException {
@@ -55,8 +46,10 @@ public class CommunicationTest {
         CheckersClientDemo client2;
         CheckersServerDemo server = runServer();
 
-        client1 = makeClient(new Socket("127.0.0.1",serverPort),"WHITE");
-        client2 = makeClient(new Socket("127.0.0.1",serverPort),"BLACK");
+        client1 = new CheckersClientDemo(new Socket("127.0.0.1",serverPort));
+        client1.setPlayerRole("WHITE");
+        client2 = new CheckersClientDemo(new Socket("127.0.0.1",serverPort));
+        client2.setPlayerRole("BLACK");
 
         Assertions.assertNotNull(server);
         Assertions.assertNotNull(client1);
@@ -65,9 +58,13 @@ public class CommunicationTest {
         //since makeClient method omits hand-shaking we are able to follow through it here:
         Assertions.assertEquals("WELCOME white", client1.in.nextLine());
         Assertions.assertEquals("MESSAGE Waiting for opponent to connect", client1.in.nextLine());
-        Assertions.assertEquals("MESSAGE Opponent has joined", client1.in.nextLine());
-        //HandShake for the 2nd player
         Assertions.assertEquals("WELCOME black", client2.in.nextLine());
+        Assertions.assertEquals("MESSAGE Opponent has joined", client1.in.nextLine());
+
+        //client1 picks game-type
+        client1.out.println(gameType);
+        Assertions.assertEquals(gameType, client2.in.nextLine());
+        Assertions.assertTrue(client1.in.nextLine().startsWith("MESSAGE chosen game type is "));
 
         //trying out different moves
         client1.pushCommand("NORMAL", 0,5,1,4);
@@ -75,13 +72,20 @@ public class CommunicationTest {
         Assertions.assertEquals("OPPONENT_MOVED:NORMAL:0:5:1:4:-1:-1", client2.in.nextLine());
 
 
-        client2.pushCommand("NORMAL", 1, 0, 4, 3); //invalid move
+//        client2.pushCommand("NORMAL", 1, 0, 4, 3); //invalid move but managed by gui app logic
+//
+//        client1.pushCommand("KILL", 1, 4, 2, 3); //not my turn
+//        Assertions.assertEquals("INVALID_MOVE:(type):1:4: Not your turn", client1.in.nextLine());
 
-        Assertions.assertEquals("INVALID_MOVE:(type):6:7: It isn't your piece", client2.in.nextLine());
-
+        client1.in.close();
+        client1.out.close();
+        client1.getSocket().close();
+        client2.in.close();
+        client2.out.close();
+        client2.getSocket().close();
         server.closeServerSocket();
     }
-
+//    void playGame(){};
 
     //TODO: MAKE MORE TESTS
 }

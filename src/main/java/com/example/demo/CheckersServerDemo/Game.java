@@ -13,7 +13,7 @@ public abstract class Game {
         this.boardWidth = boardWidth;
         this.boardHeight = boardHeight;
         generateBoard();
-        //showBoard();
+        showBoard();
     }
 
     public void generateBoard() {
@@ -159,12 +159,12 @@ public abstract class Game {
             throw new IllegalStateException("illegal move!");
         if (hasToCapture(currentPlayer) && !type.equalsIgnoreCase("KILL"))
             throw new IllegalStateException("You must capture first!");
-        if (!board[oldX][oldY].hasComboMark() && assessMove(type, oldX, oldY, newX, newY) < bestMoveValue(currentPlayer))
-            throw new IllegalStateException("Unluckily 4 u, every player must play their best move!");
+//        if (!board[oldX][oldY].hasComboMark() && assessMove(type, oldX, oldY, newX, newY) < bestMoveValue(currentPlayer))
+//            throw new IllegalStateException("Unluckily 4 u, every player must play their best move!");
         System.gc();
     }
 
-    private int bestMoveValue(Player player) {
+    protected int bestMoveValue(Player player) {
         int value = 0;
         for (int x = 0 ; x < boardHeight ; x++) {
             for (int y = 0 ; y < boardWidth ; y++) {
@@ -248,7 +248,7 @@ public abstract class Game {
                     //board[x1][y1] is the first hurdle encountered
                     //...or end of board!
 
-                    System.out.println("debug:3:checking if king piece has to capture:x1="+x1+":y1"+y1);
+                    System.out.println("debug:3:checking if king piece has to capture:x1="+x1+":y1="+y1);
                     if (!onBoard(x1,y1)) {
                         continue;
                     }
@@ -263,10 +263,10 @@ public abstract class Game {
 
                         System.out.println("debug:5:checking if king piece has to capture");
                         if (tileAvailable(x1,y1)) {
-                            System.out.println("debug:6:checking if king piece has to capture");
+                            System.out.println("debug:6:king piece has to capture");
                             return true;
                         }
-                        System.out.println("debug:7:checking if king piece has to capture");
+                        System.out.println("debug:7:king piece mustn't capture");
                     }
                 }
             }
@@ -298,7 +298,7 @@ public abstract class Game {
         return isValidMove(type, oldX, oldY, newX, newY, killX, killY, pieceToMove);
     }
 
-    private boolean isValidMove(String type, int oldX, int oldY, int newX, int newY, int killX, int killY){
+    protected boolean isValidMove(String type, int oldX, int oldY, int newX, int newY, int killX, int killY){
         return isValidMove(type, oldX, oldY, newX, newY, killX, killY, board[oldX][oldY]);
     }
 
@@ -428,7 +428,7 @@ public abstract class Game {
     // gain +1 for every capture,
     // gain +2 for king captures
     // assert move is valid before this method call!
-    private int assessMove(String type, int oldX, int oldY, int newX, int newY) {
+    protected int assessMove(String type, int oldX, int oldY, int newX, int newY) {
         return assessMove(type, oldX, oldY, newX, newY, new String[boardWidth][boardHeight], board[oldX][oldY]);
     }
 

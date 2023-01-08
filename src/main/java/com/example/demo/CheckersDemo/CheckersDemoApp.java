@@ -341,22 +341,21 @@ public class CheckersDemoApp extends Application {
         Platform.runLater(() -> msgLabel.setText(msg));
     }
 
+    //adjusts game parameters for specific game types
     public static void updateGameType(String gameType) {
-        Platform.runLater(() -> {
-            switch (gameType) {
-                case "Classic":
+            switch (gameType.toUpperCase()) {
+                case "CLASSIC":
+                case "RUSSIAN":
                     break;
-                case "Russian":
-                    break;
-                case "Polish": {
+                case "POLISH":
                     WIDTH = 10;
                     HEIGHT = 10;
-                    numOfRowsOccupied = 4;
-                }
-                default:
+                    TILE_SIZE = 85;
                     break;
+                default:
+                    System.out.println("debug:gametype == " + gameType);
+                    throw new IllegalArgumentException("invalid game type selected");
             }
-        });
     }
 
     private static AudioClip clip(String type){
@@ -385,6 +384,7 @@ public class CheckersDemoApp extends Application {
         try {
             client = new CheckersClientDemo(new Socket("localhost", 4545));
             System.out.println("client connected with server");
+            client.handShake();
             System.out.println("calling listener thread...");
             this.board = new Tile[WIDTH][HEIGHT];
             client.receiveMessageFromServer(board, pieceGroup, msgLabel);

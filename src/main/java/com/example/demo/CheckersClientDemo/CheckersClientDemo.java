@@ -33,19 +33,19 @@ public class CheckersClientDemo {
         this.socket = socket;
         this.in = new Scanner(socket.getInputStream());
         this.out = new PrintWriter(socket.getOutputStream(), true);
-        handShake();
+//        handShake(); // needs to be invoked
     }
 
     public CheckersClientDemo(){}
 
-    private void handShake(){
+    public void handShake(){
 
         System.out.println("debug1");
 //        if (in.hasNextLine()){
             System.out.println("debug2");
             var response = in.nextLine();
             var side = response.substring(8);
-            String gameType = null;
+            String gameType;
             System.out.println("HANDSHAKE: " + side);
             if(side.equalsIgnoreCase("white")){ //WHITE
                 playerRole = "white";
@@ -201,4 +201,8 @@ public class CheckersClientDemo {
     }
 
     public void setPlayerRole(String playerRole) { this.playerRole = playerRole; }
+
+    public Socket getSocket() {
+        return socket;
+    }
 }

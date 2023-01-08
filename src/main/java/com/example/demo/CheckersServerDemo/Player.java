@@ -98,7 +98,7 @@ public class Player implements Runnable {
                         -1,
                         -1
                 );
-            } else if ( command.startsWith("KILL") ) {
+            } else if (command.startsWith("KILL")) {
                 int x0, y0, newX, newY, killX, killY;
                 processMoveCommand(
                         "KILL",
