@@ -471,8 +471,8 @@ public abstract class Game {
             int[][] tmpMoveValue = new int[][]{{moveValue, moveValue}, {moveValue, moveValue}};
 
 
-//                dirX = pieceToMove.getKillingDirX();
-//                dirY = pieceToMove.getKillingDirY();
+//          dirX = pieceToMove.getKillingDirX();
+//          dirY = pieceToMove.getKillingDirY();
             dirX = allDirs;
             dirY = allDirs;
 
