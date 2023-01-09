@@ -25,4 +25,16 @@ public class PawnsTests {
         classicCheckers.setPawn(2,5, new King(PawnColor.WHITE));
         Assertions.assertTrue(classicCheckers.canMove(2,5));
     }
+
+    @Test
+    void pawnDirections() {
+        Pawn whitePawn = new Pawn(PawnColor.WHITE);
+        Pawn blackPawn = new Pawn(PawnColor.BLACK);
+        King king = new King(PawnColor.BLACK);
+        Assertions.assertNotNull(king);
+        Assertions.assertNotNull(whitePawn);
+        Assertions.assertNotNull(blackPawn);
+        Assertions.assertEquals(-1, whitePawn.getDir());
+        Assertions.assertEquals(1, blackPawn.getDir());
+    }
 }

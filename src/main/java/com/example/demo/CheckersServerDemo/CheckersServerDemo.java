@@ -40,7 +40,7 @@ public class CheckersServerDemo {
                 System.out.println("Client no." + ClientIndex++ + " has connected");
                 Player playerB = new Player(clientSocketB, PawnColor.BLACK);
                 playerB.setOpponent(playerA);
-//                playerB.setGame(game);
+//              playerB.setGame(game);
                 pool.execute(playerB);
 
 

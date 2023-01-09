@@ -2,6 +2,9 @@ package com.example.demo.CheckersServerDemo;
 
 public class ClassicCheckers extends Game {
 
+    /**
+     * Constructor of classic checkers game.
+     */
     public ClassicCheckers() {
         super(8, 8);
     }
@@ -18,7 +21,7 @@ public class ClassicCheckers extends Game {
 
         //add "only best moves legal" logic
         if (!board[oldX][oldY].hasComboMark() && assessMove(type, oldX, oldY, newX, newY) < bestMoveValue(currentPlayer))
-            throw new IllegalStateException("Unluckily 4 u, every player must play their best move!");
+            throw new IllegalStateException("Unluckily 4 u, every player must play their best move!"); //loser
         System.gc();
     }
 

@@ -46,7 +46,7 @@ public abstract class Game {
     }
 
     public boolean hasWinner() {
-//        return !hasPawns(PawnColor.BLACK) || !hasPawns(PawnColor.WHITE) || noMovesPossible(PawnColor.BLACK) || noMovesPossible(PawnColor.WHITE);
+//      return !hasPawns(PawnColor.BLACK) || !hasPawns(PawnColor.WHITE) || noMovesPossible(PawnColor.BLACK) || noMovesPossible(PawnColor.WHITE);
         return !hasPawns(PawnColor.BLACK) || !hasPawns(PawnColor.WHITE) || noMovesPossible(currentPlayer.getOpponent().playerColor);
     }
 
