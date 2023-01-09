@@ -1,24 +1,20 @@
-package com.example.demo.CheckersClienServerTests;
+package com.example.demo.CheckersCommunicationTessts;
 
 import com.example.demo.CheckersClientDemo.CheckersClientDemo;
 import com.example.demo.CheckersServerDemo.CheckersServerDemo;
-import com.example.demo.CheckersServerDemo.ClassicCheckers;
-import com.example.demo.CheckersServerDemo.Game;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
+
+import static com.example.demo.CheckersClientDemo.CheckersClientDemo.*;
 
 //INTEGRALITY TEST
 public class CommunicationTest {
 
     private final int serverPort = 5050;
-
-    public String gameType = "CLASSIC";
 
     private CheckersServerDemo createServer() throws IOException {
         return new CheckersServerDemo(new ServerSocket(serverPort));
@@ -38,9 +34,7 @@ public class CommunicationTest {
         return server;
     }
 
-
-    @Test
-    void connectionTest() throws IOException, InterruptedException {
+    CheckersClientDemo[] initializeGame(String gameType) throws IOException, InterruptedException {
 
         CheckersClientDemo client1;
         CheckersClientDemo client2;
@@ -64,28 +58,63 @@ public class CommunicationTest {
         //client1 picks game-type
         client1.out.println(gameType);
         Assertions.assertEquals(gameType, client2.in.nextLine());
-        Assertions.assertTrue(client1.in.nextLine().startsWith("MESSAGE chosen game type is "));
+        client2.out.println(gameType);
+        Assertions.assertTrue(client1.in.nextLine().startsWith("MESSAGE chosen game type is " + gameType.toUpperCase()));
 
-        //trying out different moves
+        return new CheckersClientDemo[]{client1,client2};
+
+//        client1.in.close();
+//        client1.out.close();
+//        client1.getSocket().close();
+//        client2.in.close();
+//        client2.out.close();
+//        client2.getSocket().close();
+//        server.closeServerSocket();
+    }
+
+    void playGame(CheckersClientDemo[] clients){
+
+        Assertions.assertEquals(2, clients.length);
+
+        //init
+        CheckersClientDemo client1 = clients[0];
+        CheckersClientDemo client2 = clients[1];
+        Assertions.assertNotNull(client1);
+        Assertions.assertNotNull(client2);
+
+        //play
+
+        //1st TURN
         client1.pushCommand("NORMAL", 0,5,1,4);
         Assertions.assertEquals("VALID_MOVE:NORMAL:0:5:1:4:-1:-1", client1.in.nextLine());
         Assertions.assertEquals("OPPONENT_MOVED:NORMAL:0:5:1:4:-1:-1", client2.in.nextLine());
+        //END OF TURN
 
+        //NEXT TURN
+        client1.pushCommand("KILL", 1, 4, 2, 3); //not my turn
+        Assertions.assertEquals("INVALID_MOVE:(type):1:4: Not your turn", client1.in.nextLine());
 
-//        client2.pushCommand("NORMAL", 1, 0, 4, 3); //invalid move but managed by gui app logic
-//
-//        client1.pushCommand("KILL", 1, 4, 2, 3); //not my turn
-//        Assertions.assertEquals("INVALID_MOVE:(type):1:4: Not your turn", client1.in.nextLine());
+        client2.pushCommand("NORMAL", 1, 0, 4, 3); //invalid move
+        Assertions.assertEquals("INVALID_MOVE:(type):6:7: It isn't your piece", client2.in.nextLine());
 
-        client1.in.close();
-        client1.out.close();
-        client1.getSocket().close();
-        client2.in.close();
-        client2.out.close();
-        client2.getSocket().close();
-        server.closeServerSocket();
+        client2.pushCommand("NORMAL", 0, 2, 1, 3); //invalid move
+        Assertions.assertEquals("INVALID_MOVE:(type):7:5: There's no piece to move", client2.in.nextLine());
+
+        client2.pushCommand("NORMAL", 1, 2, 0, 3); //invalid move
+        Assertions.assertEquals("INVALID_MOVE:(type):6:5: It isn't your piece", client2.in.nextLine());
+
+        client2.pushCommand("NORMAL", invertHorizontal(1),
+                invertVertical(2),
+                invertHorizontal(0),
+                invertVertical(3)); //valid move
+        Assertions.assertEquals("VALID_MOVE:NORMAL:1:2:0:3:-1:-1", client2.in.nextLine());
+        Assertions.assertEquals("OPPONENT_MOVED:NORMAL:1:2:0:3:-1:-1", client1.in.nextLine());
+        //END OF TURN
     }
-//    void playGame(){};
 
-    //TODO: MAKE MORE TESTS
+
+
+
+
+
 }

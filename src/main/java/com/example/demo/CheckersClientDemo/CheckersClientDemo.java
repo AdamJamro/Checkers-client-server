@@ -36,44 +36,38 @@ public class CheckersClientDemo {
 //        handShake(); // needs to be invoked
     }
 
-    public CheckersClientDemo(){}
-
     public void handShake(){
 
-        System.out.println("debug1");
-//        if (in.hasNextLine()){
-            System.out.println("debug2");
-            var response = in.nextLine();
-            var side = response.substring(8);
-            String gameType;
-            System.out.println("HANDSHAKE: " + side);
-            if(side.equalsIgnoreCase("white")){ //WHITE
-                playerRole = "white";
-                isCurrentPlayer = false; //will be set true at the end of this block
+        var response = in.nextLine();
+        var side = response.substring(8);
+        String gameType;
+        System.out.println("HANDSHAKE: " + side);
+        if(side.equalsIgnoreCase("white")){ //WHITE
+            playerRole = "white";
+            isCurrentPlayer = false; //will be set true at the end of this block
 
-                System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Waiting for opponent...
-                System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Opponent has joined...
-                System.out.println("Choose game type");
-                do{
-                    gameType = new Scanner(System.in).nextLine();
-                } while (Arrays.stream(gameTypes).noneMatch(gameType::equalsIgnoreCase));
-                out.println(gameType.toUpperCase());
-                System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE chosen game type is <?>
+            System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Waiting for opponent...
+            System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE Opponent has joined...
+            System.out.println("Choose game type");
+            do{
+                gameType = new Scanner(System.in).nextLine();
+            } while (Arrays.stream(gameTypes).noneMatch(gameType::equalsIgnoreCase));
+            out.println(gameType.toUpperCase());
+            System.out.println("HANDSHAKE: " + in.nextLine()); //MESSAGE chosen game type is <?>
 
-                isCurrentPlayer = true;
-                start = System.nanoTime(); // start counting move time for the first player
-            } else {
-                playerRole = "black";
-                isCurrentPlayer = false;
+            isCurrentPlayer = true;
+            start = System.nanoTime(); // start counting move time for the first player
+        } else {
+            playerRole = "black";
+            isCurrentPlayer = false;
 
-                gameType = in.nextLine();
-                out.println(gameType); //notify my player-thread worker
-                System.out.println("HANDSHAKE: " + gameType); //<?>
-            }
+            gameType = in.nextLine();
+            out.println(gameType); //notify my player-thread worker
+            System.out.println("HANDSHAKE: " + gameType); //<?>
+        }
         //since this app only partially handles logic only few board size needs to be changed, which is handled below
         CheckersDemoApp.updateGameType(gameType);
         gameStartTime = System.nanoTime(); //begin game clock (will be displayed at the end screen)
-//        }
 
     }
 
@@ -99,7 +93,7 @@ public class CheckersClientDemo {
                 if (in.hasNextLine()){
                     try {
                         String msg = in.nextLine();
-                        System.out.println("just received: "+msg);
+                        System.out.println("message received: " + msg);
                         if (msg.startsWith("VALID_MOVE")){
 
                             String[] commands = msg.split(":");
@@ -130,7 +124,7 @@ public class CheckersClientDemo {
                         } else if (msg.startsWith("OPPONENT_MOVED")){
 
                             String[] commands = msg.split(":");
-                            System.out.println(Arrays.toString(commands));
+//                            System.out.println("debug:" + Arrays.toString(commands));
                             int x0 = Integer.parseInt(commands[2]);
                             int y0 = Integer.parseInt(commands[3]);
                             if (playerRole.equalsIgnoreCase("BLACK")){
@@ -184,7 +178,7 @@ public class CheckersClientDemo {
         if(playerRole.equalsIgnoreCase("WHITE"))
             out.println(command + ":" + oldX + ":" + oldY + ":" + newX + ":" + newY + ":-1:-1");
         else
-            out.println(command + ":" + invertHorizontal(oldX) + ":" + invertHorizontal(oldY)
+            out.println(command + ":" + invertHorizontal(oldX) + ":" + invertVertical(oldY)
                 + ":" + invertHorizontal(newX) + ":" + invertVertical(newY) + ":-1:-1" );
     }
 

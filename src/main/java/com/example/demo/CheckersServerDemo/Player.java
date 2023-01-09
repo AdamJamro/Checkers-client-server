@@ -115,11 +115,14 @@ public class Player implements Runnable {
 
     private void processMoveCommand(String type, int oldX, int oldY, int newX, int newY, int killX, int killY) {
         try {
-            String movedPieceType = game.board[oldX][oldY].toString();
-//            System.out.println("mpTYPE: (before move)"+movedPieceType);
-            game.move(type, oldX, oldY, newX, newY, killX, killY, this);
-//            System.out.println("mpTYPE (after move): "+game.board[newX][newY].toString());
+            String movedPieceType = null;
+            if (game.board[oldX][oldY] != null)
+                movedPieceType = game.board[oldX][oldY].toString();
 
+            //send move request to server
+            game.move(type, oldX, oldY, newX, newY, killX, killY, this);
+
+            //if no exception thrown from game.move(..) then notify the client:
             String response = "VALID_MOVE", opponentResponse = "OPPONENT_MOVED";
             if (type.equalsIgnoreCase("KILL")
                     && game.hasToCapture(newX,newY)
@@ -150,6 +153,7 @@ public class Player implements Runnable {
                 opponent.output.println("DRAW");
             }
         } catch (IllegalStateException e) {
+            //notify about exception:
             output.println("INVALID_MOVE:(type):"+oldX+":"+oldY+": " + e.getMessage());
         }
     }

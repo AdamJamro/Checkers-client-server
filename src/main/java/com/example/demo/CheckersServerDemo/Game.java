@@ -135,7 +135,7 @@ public abstract class Game {
 
         makeKingIfCond(newX, newY);
 
-        System.out.println("debug:move:pieceToMove.hasComboMark()=="+board[newX][newY].hasComboMark());
+//        System.out.println("debug:move:pieceToMove.hasComboMark()=="+board[newX][newY].hasComboMark());
         currentPlayer = currentPlayer.getOpponent();
     }
 
@@ -149,6 +149,8 @@ public abstract class Game {
             throw new IllegalStateException("Not your turn");
         if (player.getOpponent() == null)
             throw new IllegalStateException("You don't have an opponent yet");
+        if (board[oldX][oldY] == null)
+            throw new IllegalStateException("There's no piece to move");
         if (board[newX][newY] != null)
             throw new IllegalStateException("Cell already occupied");
         if(newX >= boardWidth || newY >= boardHeight)
@@ -229,7 +231,7 @@ public abstract class Game {
 
         if (board[x][y] instanceof King piece){
 
-            System.out.println("\ndebug:1:checking if king piece has to capture");
+//            System.out.println("\ndebug:1:checking if king piece has to capture");
 
             int x1, y1;
             int[] directions = new int[]{-1, 1};
@@ -237,7 +239,7 @@ public abstract class Game {
                 for (int dirY : directions) {
                     int step = 0;
 
-                    System.out.println("debug:2:checking if king piece has to capture");
+//                    System.out.println("debug:2:checking if king piece has to capture");
                     do{
                         //take a step
                         step++;
@@ -248,11 +250,11 @@ public abstract class Game {
                     //board[x1][y1] is the first hurdle encountered
                     //...or end of board!
 
-                    System.out.println("debug:3:checking if king piece has to capture:x1="+x1+":y1="+y1);
+//                    System.out.println("debug:3:checking if king piece has to capture:x1="+x1+":y1="+y1);
                     if (!onBoard(x1,y1)) {
                         continue;
                     }
-                    System.out.println("debug:4:checking if king piece has to capture");
+//                    System.out.println("debug:4:checking if king piece has to capture");
 
                     if (board[x1][y1].getColor().getOpposite() == piece.getColor()){
 
@@ -261,12 +263,12 @@ public abstract class Game {
                         x1 = x + dirX * step;
                         y1 = y + dirY * step;
 
-                        System.out.println("debug:5:checking if king piece has to capture");
+//                        System.out.println("debug:5:checking if king piece has to capture");
                         if (tileAvailable(x1,y1)) {
-                            System.out.println("debug:6:king piece has to capture");
+//                            System.out.println("debug:6:king piece has to capture");
                             return true;
                         }
-                        System.out.println("debug:7:king piece mustn't capture");
+//                        System.out.println("debug:7:king piece mustn't capture");
                     }
                 }
             }
@@ -543,4 +545,8 @@ public abstract class Game {
         return moveValue;
     }
 
+
+    public void mockBoard(AbstractPawn[][] board){
+        this.board = board;
+    }
 }
