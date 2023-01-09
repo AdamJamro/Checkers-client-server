@@ -13,9 +13,10 @@
 
 
 Uruchamianie gry:
-Wlacz CheckersServerDemo
-Wlacz CheckersDemoApp (GUI)
-Wlacz kolejne CheckersDemoApp (GUI kolejnego gracza)
+ - Wlacz CheckersServerDemo
+ - Wlacz CheckersDemoApp (GUI)
+ - Wlacz kolejne CheckersDemoApp (GUI kolejnego gracza)
+
 
 wpisz w standadrdowe wejscie pierwszego GUI typ gry:
  - POLISH
