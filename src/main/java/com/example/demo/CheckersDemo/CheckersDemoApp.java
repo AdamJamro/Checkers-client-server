@@ -249,7 +249,7 @@ public class CheckersDemoApp extends Application {
             killY = invertVertical(killY);
         }
 
-        System.out.println("updateBoard:debug");
+//        System.out.println("updateBoard:debug");
         int finalOldX = oldX;
         int finalOldY = oldY;
         int finalNewX = newX;
@@ -261,7 +261,9 @@ public class CheckersDemoApp extends Application {
         Platform.runLater(() -> {
             Piece piece = board[finalOldX][finalOldY].getPiece(); //which piece was moved
 
-            piece.move(finalNewX, finalNewY); //update view
+            //update view
+            piece.move(finalNewX, finalNewY);
+
             //update logic
             board[finalNewX][finalNewY].setPiece(piece);
             board[finalOldX][finalOldY].setPiece(null);
@@ -301,8 +303,6 @@ public class CheckersDemoApp extends Application {
             }
 
         } );
-        System.out.println("updateBoard:debug2");
-//        Platform.runLater(() -> ModalPopupWindow.display("abc","sample", "abcdetail:seconddetail"));
     }
 
     //does not implement capture logic for king since it is unnecessary for this app purposes
@@ -359,7 +359,7 @@ public class CheckersDemoApp extends Application {
     }
 
     private static AudioClip clip(String type){
-        //initialize
+        //lazy initialize
         if (captureClip == null) {
             captureClip = new AudioClip(Objects.requireNonNull(CheckersDemoApp.class.getResource("/music/capture.mp3")).toExternalForm());
         }
@@ -375,7 +375,7 @@ public class CheckersDemoApp extends Application {
             return normalClip;
         }
         else {
-            throw new IllegalArgumentException("can only play 'capture' or 'normal' move-sounds");
+            throw new IllegalArgumentException("tried to use unavailable clip");
         }
     }
 
@@ -407,12 +407,10 @@ public class CheckersDemoApp extends Application {
         primaryStage.setResizable(false);
         primaryStage.setScene(scene);
 
-        System.out.println("debug:fx::show()");
         primaryStage.show();
     }
 
     public static void main(String[] args) {
-        System.out.println("debug:launch(args)");
         launch(args);
     }
 }
