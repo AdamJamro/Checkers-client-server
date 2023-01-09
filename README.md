@@ -16,12 +16,10 @@ Uruchamianie gry:
  - Wlacz CheckersServerDemo
  - Wlacz CheckersDemoApp (GUI)
  - Wlacz kolejne CheckersDemoApp (GUI kolejnego gracza)
-
-
-wpisz w standadrdowe wejscie pierwszego GUI typ gry:
- - POLISH
- - RUSSIAN
- - CLASSIC
+ - wpisz w standadrdowe wejscie pierwszego GUI typ gry:
+ - - POLISH
+ - - RUSSIAN
+ - - CLASSIC
  
  logi gry zapisywane sa w standardowym wyjsciu servera
  server przyjmuje wiele graczy ale tylko 2 na raz
